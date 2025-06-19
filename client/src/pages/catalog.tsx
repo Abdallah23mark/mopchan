@@ -3,6 +3,7 @@ import { Link } from "wouter";
 import type { Thread } from "@shared/schema";
 import ThreadCard from "@/components/thread-card";
 import { Button } from "@/components/ui/button";
+import CreateThreadModal from "@/components/create-thread-modal";
 
 export default function Catalog() {
   const { data: threads, isLoading, error } = useQuery<Thread[]>({
@@ -26,7 +27,7 @@ export default function Catalog() {
   }
 
   return (
-    <div className="p-4" style={{ backgroundColor: '#FFFFEE' }}>
+    <div className="p-4 theme-bg-main">
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-2">
         {threads?.map((thread) => (
           <ThreadCard key={thread.id} thread={thread} />
@@ -35,7 +36,7 @@ export default function Catalog() {
 
       {(!threads || threads.length === 0) && (
         <div className="text-center text-gray-600 mt-8 text-xs">
-          No threads found. <Link href="/create" className="text-blue-600 underline">Create the first one!</Link>
+          No threads found. <CreateThreadModal trigger={<button className="text-blue-600 underline">Create the first one!</button>} />
         </div>
       )}
     </div>

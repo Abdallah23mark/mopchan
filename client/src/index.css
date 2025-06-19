@@ -3,6 +3,17 @@
 @tailwind utilities;
 
 :root {
+  --bg-main: #FFFFEE;
+  --bg-post: #F0F8FF;
+  --bg-header: #FFFFFF;
+  --bg-nav: #E0E0E0;
+  --text-main: #000000;
+  --text-green: #789922;
+  --text-quote: #AA0000;
+  --border-color: #B7B7B7;
+}
+
+:root {
   --background: hsl(60, 100%, 98%);
   --foreground: hsl(20, 14.3%, 4.1%);
   --muted: hsl(60, 4.8%, 95.9%);
@@ -64,11 +75,52 @@
 
   body {
     @apply font-sans antialiased;
-    background-color: var(--chan-bg);
-    color: var(--foreground);
+    background-color: var(--bg-main);
+    color: var(--text-main);
     font-family: Verdana, Arial, sans-serif;
     font-size: 0.75rem;
     line-height: 1.2;
+  }
+  
+  .theme-bg-main {
+    background-color: var(--bg-main);
+  }
+  
+  .theme-bg-post {
+    background-color: var(--bg-post);
+  }
+  
+  .theme-bg-header {
+    background-color: var(--bg-header);
+  }
+  
+  .theme-bg-nav {
+    background-color: var(--bg-nav);
+  }
+  
+  .theme-text-main {
+    color: var(--text-main);
+  }
+  
+  .theme-text-green {
+    color: var(--text-green);
+  }
+  
+  .theme-text-quote {
+    color: var(--text-quote);
+  }
+  
+  .theme-border {
+    border-color: var(--border-color);
+  }
+  
+  .highlight-post {
+    animation: highlight 2s ease-in-out;
+  }
+  
+  @keyframes highlight {
+    0% { background-color: #ffff00; }
+    100% { background-color: transparent; }
   }
 }
 

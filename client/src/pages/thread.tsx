@@ -3,7 +3,7 @@ import { useRoute } from "wouter";
 import { Link } from "wouter";
 import type { Thread, Post } from "@shared/schema";
 import PostComponent from "@/components/post";
-import QuickReply from "@/components/quick-reply";
+import QuickReplyModal from "@/components/quick-reply-modal";
 import { apiRequest } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -27,6 +27,7 @@ export default function ThreadPage() {
       return res.json();
     },
     enabled: !!threadId,
+    refetchInterval: 15000, // Auto-refresh every 15 seconds
   });
 
   const deletePostMutation = useMutation({
@@ -82,11 +83,15 @@ export default function ThreadPage() {
   const { thread, posts } = data;
 
   const handleQuote = (postId: number) => {
-    const textarea = document.querySelector('textarea[name="content"]') as HTMLTextAreaElement;
-    if (textarea) {
-      const quote = `>>${postId}\n`;
-      textarea.value += quote;
-      textarea.focus();
+    // Store the quote in localStorage so the modal can pick it up
+    const existingQuote = localStorage.getItem('pendingQuote') || '';
+    const newQuote = `>>No. ${postId}\n`;
+    localStorage.setItem('pendingQuote', existingQuote + newQuote);
+    
+    // Trigger the quick reply modal
+    const quickReplyButton = document.querySelector('[data-quick-reply-trigger]') as HTMLButtonElement;
+    if (quickReplyButton) {
+      quickReplyButton.click();
     }
   };
 
@@ -103,13 +108,13 @@ export default function ThreadPage() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto p-4" style={{ backgroundColor: '#FFFFEE' }}>
+    <div className="max-w-6xl mx-auto p-4 theme-bg-main">
       <div className="mb-4">
         <div className="text-xs text-gray-600 mb-2">
           <Link href="/" className="text-blue-600 underline">Return to Catalog</Link>
         </div>
         <div className="flex justify-between items-center">
-          <h2 className="text-lg font-bold text-red-800 mb-2">
+          <h2 className="text-lg font-bold theme-text-quote mb-2">
             Thread #{thread.id}
           </h2>
           <Button
@@ -124,7 +129,7 @@ export default function ThreadPage() {
       </div>
 
       {/* Original Post */}
-      <div className="bg-blue-50 border border-gray-400 p-3 mb-4">
+      <div className="theme-bg-post theme-border border p-3 mb-4">
         <PostComponent
           post={{
             id: thread.id,
@@ -144,7 +149,7 @@ export default function ThreadPage() {
       {/* Replies */}
       <div className="space-y-2">
         {posts.map((post) => (
-          <div key={post.id} className="border-l-4 border-gray-400 pl-4 py-2 bg-white">
+          <div key={post.id} className="border-l-4 theme-border pl-4 py-2 theme-bg-post">
             <PostComponent
               post={post}
               isOP={false}
@@ -155,7 +160,35 @@ export default function ThreadPage() {
         ))}
       </div>
 
-      <QuickReply threadId={thread.id} />
+      <div className="mt-6 text-center">
+        <QuickReplyModal 
+          threadId={thread.id}
+          trigger={
+            <Button 
+              data-quick-reply-trigger
+              className="theme-bg-post theme-border px-4 py-2 text-xs hover:opacity-80 theme-text-main border"
+            >
+              Quick Reply
+            </Button>
+          }
+        />
+        
+        <div className="mt-2">
+          <Button
+            onClick={() => {
+              const thread = data?.thread;
+              if (thread && (window as any).addWatchedThread) {
+                (window as any).addWatchedThread(thread);
+              }
+            }}
+            variant="outline"
+            size="sm"
+            className="text-xs theme-border"
+          >
+            📌 Watch Thread
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }

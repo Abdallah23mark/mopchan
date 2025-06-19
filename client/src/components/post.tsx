@@ -27,24 +27,59 @@ export default function PostComponent({ post, isOP = false, subject, onQuote, on
     // Convert >quotes to greentext
     return content.split('\n').map((line, index) => {
       if (line.startsWith('>')) {
-        if (line.match(/^>>\d+$/)) {
-          // Post quote
+        if (line.match(/^>>(No\. )?\d+$/)) {
+          // Post quote - red maroon color with hover functionality
+          const postNumber = line.replace(/^>>(No\. )?/, '');
           return (
-            <div key={index} className="text-red-800">
+            <div 
+              key={index} 
+              className="theme-text-quote hover:opacity-75 cursor-pointer inline-block"
+              onClick={() => scrollToPost(postNumber)}
+              onMouseEnter={(e) => showPostPreview(e, postNumber)}
+              onMouseLeave={hidePostPreview}
+              title={`Click to jump to post ${postNumber}`}
+            >
               {line}
             </div>
           );
         } else {
-          // Greentext
+          // Greentext - green color
           return (
-            <div key={index} className="text-green-600">
+            <div key={index} className="theme-text-green">
               {line}
             </div>
           );
         }
       }
-      return <div key={index}>{line}</div>;
+      return <div key={index}>{line || "\u00A0"}</div>; // Non-breaking space for empty lines
     });
+  };
+
+  const scrollToPost = (postNumber: string) => {
+    const element = document.querySelector(`[data-post-id="${postNumber}"]`);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      element.classList.add('highlight-post');
+      setTimeout(() => element.classList.remove('highlight-post'), 2000);
+    }
+  };
+
+  const showPostPreview = (e: React.MouseEvent, postNumber: string) => {
+    // Create a simple tooltip showing post preview
+    const tooltip = document.createElement('div');
+    tooltip.id = 'post-preview';
+    tooltip.className = 'fixed z-50 bg-white border border-gray-400 p-2 text-xs max-w-xs shadow-lg pointer-events-none';
+    tooltip.style.left = e.clientX + 10 + 'px';
+    tooltip.style.top = e.clientY - 10 + 'px';
+    tooltip.textContent = `Post #${postNumber} preview (click to jump)`;
+    document.body.appendChild(tooltip);
+  };
+
+  const hidePostPreview = () => {
+    const tooltip = document.getElementById('post-preview');
+    if (tooltip) {
+      tooltip.remove();
+    }
   };
 
   const expandImage = (imageUrl: string) => {
@@ -52,7 +87,10 @@ export default function PostComponent({ post, isOP = false, subject, onQuote, on
   };
 
   return (
-    <div className={`flex flex-col md:flex-row gap-4 ${isOP ? 'bg-blue-50' : ''}`}>
+    <div 
+      className={`flex flex-col md:flex-row gap-4 ${isOP ? 'theme-bg-post' : ''}`}
+      data-post-id={post.id}
+    >
       {post.imageUrl && (
         <div className="flex-shrink-0">
           <img
@@ -70,7 +108,7 @@ export default function PostComponent({ post, isOP = false, subject, onQuote, on
       )}
       <div className="flex-1">
         <div className="mb-2 text-xs">
-          <span className="font-bold text-green-600">Anonymous</span>
+          <span className="font-bold theme-text-green">Anonymous</span>
           <span className="text-gray-600 ml-2">{formatDate(post.createdAt)}</span>
           <span className="text-blue-600 ml-2">No. {post.id}</span>
           <Button

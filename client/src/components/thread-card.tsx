@@ -7,8 +7,28 @@ interface ThreadCardProps {
 
 export default function ThreadCard({ thread }: ThreadCardProps) {
   const formatContent = (content: string) => {
-    // Truncate content for card display
-    return content.length > 100 ? content.substring(0, 100) + "..." : content;
+    // Truncate content for card display but preserve greentext formatting
+    const truncated = content.length > 100 ? content.substring(0, 100) + "..." : content;
+    return truncated.split('\n').map((line, index) => {
+      if (line.startsWith('>')) {
+        if (line.match(/^>>(No\. )?\d+$/)) {
+          // Post quote - red maroon color
+          return (
+            <div key={index} className="theme-text-quote">
+              {line}
+            </div>
+          );
+        } else {
+          // Greentext - green color
+          return (
+            <div key={index} className="text-green-700">
+              {line}
+            </div>
+          );
+        }
+      }
+      return <div key={index}>{line || "\u00A0"}</div>;
+    });
   };
 
   const formatDate = (date: Date) => {
@@ -18,14 +38,19 @@ export default function ThreadCard({ thread }: ThreadCardProps) {
 
   return (
     <Link href={`/thread/${thread.id}`}>
-      <div className="bg-white border border-gray-400 cursor-pointer hover:bg-gray-50 transition-colors" style={{ minHeight: '150px' }}>
+      <div className="theme-bg-post theme-border border cursor-pointer hover:opacity-90 transition-colors" style={{ minHeight: '150px' }}>
         {thread.imageUrl && (
           <div className="relative">
             <img
               src={thread.imageUrl}
               alt={thread.imageName || "Thread image"}
-              className="w-full h-32 object-cover"
-              style={{ maxHeight: '128px' }}
+              className="w-full object-contain cursor-pointer hover:opacity-80"
+              style={{ maxHeight: '200px' }}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                window.open(thread.imageUrl!, '_blank');
+              }}
             />
           </div>
         )}

@@ -1,22 +1,25 @@
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
+import FileInputButton from "./file-input-button";
 
-export default function CreateThread() {
-  const [, setLocation] = useLocation();
+interface CreateThreadModalProps {
+  trigger: React.ReactNode;
+}
+
+export default function CreateThreadModal({ trigger }: CreateThreadModalProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
+  const [open, setOpen] = useState(false);
   const [subject, setSubject] = useState("");
   const [content, setContent] = useState("");
   const [image, setImage] = useState<File | null>(null);
-  const [sage, setSage] = useState(false);
 
   const createThreadMutation = useMutation({
     mutationFn: async (formData: FormData) => {
@@ -35,7 +38,12 @@ export default function CreateThread() {
     onSuccess: (thread) => {
       queryClient.invalidateQueries({ queryKey: ["/api/threads"] });
       toast({ title: "Thread created successfully!" });
-      setLocation(`/thread/${thread.id}`);
+      setOpen(false);
+      setSubject("");
+      setContent("");
+      setImage(null);
+      // Navigate to the new thread
+      window.location.href = `/thread/${thread.id}`;
     },
     onError: (error) => {
       toast({ 
@@ -58,24 +66,20 @@ export default function CreateThread() {
     if (subject.trim()) formData.append("subject", subject.trim());
     formData.append("content", content.trim());
     if (image) formData.append("image", image);
-    if (sage) formData.append("sage", "true");
 
     createThreadMutation.mutate(formData);
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-4 theme-bg-main">
-      <div className="mb-4">
-        <div className="text-xs text-gray-600 mb-2">
-          <Link href="/" className="text-blue-600 underline">Return to Catalog</Link>
-        </div>
-        <h2 className="text-lg font-bold theme-text-quote mb-2">Start a New Thread</h2>
-        <div className="text-xs text-gray-600 mb-4">
-          Remember: All the stories and information posted here are artistic works of fiction.
-        </div>
-      </div>
-
-      <div className="theme-bg-post theme-border border p-4 max-w-2xl">
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        {trigger}
+      </DialogTrigger>
+      <DialogContent className="max-w-2xl" style={{ backgroundColor: '#E0E8FF' }}>
+        <DialogHeader>
+          <DialogTitle className="text-red-800 font-bold">Start a New Thread</DialogTitle>
+        </DialogHeader>
+        
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <Label className="block text-xs font-bold mb-1">Subject (Optional)</Label>
@@ -96,19 +100,24 @@ export default function CreateThread() {
               onChange={(e) => setContent(e.target.value)}
               rows={8}
               required
-              placeholder="Enter your message here..."
+              placeholder="Enter your message here...
+Use >text for greentext
+Use >>123 to quote posts"
               className="w-full p-2 text-xs border border-gray-400 font-sans resize-none"
             />
           </div>
           
           <div>
             <Label className="block text-xs font-bold mb-1">Image (Optional)</Label>
-            <Input
-              type="file"
-              accept="image/*"
-              onChange={(e) => setImage(e.target.files?.[0] || null)}
-              className="text-xs mb-2"
-            />
+            <div className="mb-2">
+              <FileInputButton
+                accept="image/*"
+                onChange={setImage}
+                className="bg-white border border-gray-400 text-xs theme-text-main hover:bg-gray-100"
+              >
+                {image ? `Selected: ${image.name}` : "Choose File"}
+              </FileInputButton>
+            </div>
             <div className="text-xs text-gray-600">
               Max file size: 3MB. Supported formats: JPG, PNG, GIF, WEBP
             </div>
@@ -127,7 +136,7 @@ export default function CreateThread() {
             </div>
           </div>
         </form>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }
