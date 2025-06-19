@@ -10,28 +10,33 @@ export default function AdminPostToggle({ onToggle, defaultValue = false }: Admi
   const [isAdminPost, setIsAdminPost] = useState(defaultValue);
   
   // Check if user is admin
-  const { data: adminUser } = useQuery({
+  const { data: adminUser, isLoading: adminLoading } = useQuery({
     queryKey: ["/api/admin/verify"],
     queryFn: async () => {
       const token = localStorage.getItem("adminToken");
-      if (!token) return null;
+      if (!token) return { user: null };
       
-      const response = await fetch("/api/admin/verify", {
-        method: "GET",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!response.ok) return null;
-      return response.json();
+      try {
+        const response = await fetch("/api/admin/verify", {
+          method: "GET",
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!response.ok) return { user: null };
+        return response.json();
+      } catch (error) {
+        return { user: null };
+      }
     },
     retry: false,
+    refetchOnWindowFocus: false,
   });
 
   useEffect(() => {
     onToggle(isAdminPost);
   }, [isAdminPost, onToggle]);
 
-  // Don't show toggle if not admin
-  if (!adminUser?.user?.isAdmin) {
+  // Don't show toggle if not admin or still loading
+  if (adminLoading || adminUser?.user?.isAdmin !== true) {
     return null;
   }
 
