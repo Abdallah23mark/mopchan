@@ -19,27 +19,7 @@ export default function ThreadPage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Check if user is admin
-  const { data: adminUser, isLoading: adminLoading } = useQuery({
-    queryKey: ["/api/admin/verify"],
-    queryFn: async () => {
-      const token = localStorage.getItem("adminToken");
-      if (!token) return { user: null };
-      
-      try {
-        const response = await fetch("/api/admin/verify", {
-          method: "GET",
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (!response.ok) return { user: null };
-        return response.json();
-      } catch (error) {
-        return { user: null };
-      }
-    },
-    retry: false,
-    refetchOnWindowFocus: false,
-  });
+  const { isAdmin, isLoading: adminLoading } = useAdmin();
 
   const { data, isLoading, error } = useQuery<ThreadData>({
     queryKey: ["/api/threads", threadId],
@@ -139,7 +119,7 @@ export default function ThreadPage() {
           <h2 className="text-lg font-bold theme-text-quote mb-2">
             Thread #{thread.id}
           </h2>
-          {!adminLoading && adminUser?.user?.isAdmin === true && (
+          {!adminLoading && isAdmin && (
             <Button
               onClick={handleDeleteThread}
               variant="outline"

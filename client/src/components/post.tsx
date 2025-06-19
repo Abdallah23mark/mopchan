@@ -15,27 +15,7 @@ interface PostProps {
 export default function PostComponent({ post, isOP = false, subject, onQuote, onDelete }: PostProps) {
   const [hoverPreview, setHoverPreview] = useState<{ postId: string; x: number; y: number } | null>(null);
 
-  // Check if user is admin
-  const { data: adminUser, isLoading: adminLoading } = useQuery({
-    queryKey: ["/api/admin/verify"],
-    queryFn: async () => {
-      const token = localStorage.getItem("adminToken");
-      if (!token) return { user: null };
-      
-      try {
-        const response = await fetch("/api/admin/verify", {
-          method: "GET",
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (!response.ok) return { user: null };
-        return response.json();
-      } catch (error) {
-        return { user: null };
-      }
-    },
-    retry: false,
-    refetchOnWindowFocus: false,
-  });
+  const { isAdmin, isLoading: adminLoading } = useAdmin();
 
   const formatDate = (date: Date) => {
     return new Date(date).toLocaleDateString("en-US", {
@@ -170,7 +150,7 @@ export default function PostComponent({ post, isOP = false, subject, onQuote, on
           >
             [Quote]
           </Button>
-          {!adminLoading && adminUser?.user?.isAdmin === true && (
+          {!adminLoading && isAdmin && (
             <Button
               onClick={() => onDelete()}
               variant="outline"

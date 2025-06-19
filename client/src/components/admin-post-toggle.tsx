@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useAdmin } from "@/hooks/useAdmin";
 
 interface AdminPostToggleProps {
   onToggle: (isAdminPost: boolean) => void;
@@ -9,34 +9,14 @@ interface AdminPostToggleProps {
 export default function AdminPostToggle({ onToggle, defaultValue = false }: AdminPostToggleProps) {
   const [isAdminPost, setIsAdminPost] = useState(defaultValue);
   
-  // Check if user is admin
-  const { data: adminUser, isLoading: adminLoading } = useQuery({
-    queryKey: ["/api/admin/verify"],
-    queryFn: async () => {
-      const token = localStorage.getItem("adminToken");
-      if (!token) return { user: null };
-      
-      try {
-        const response = await fetch("/api/admin/verify", {
-          method: "GET",
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (!response.ok) return { user: null };
-        return response.json();
-      } catch (error) {
-        return { user: null };
-      }
-    },
-    retry: false,
-    refetchOnWindowFocus: false,
-  });
+  const { isAdmin, isLoading: adminLoading } = useAdmin();
 
   useEffect(() => {
     onToggle(isAdminPost);
   }, [isAdminPost, onToggle]);
 
   // Don't show toggle if not admin or still loading
-  if (adminLoading || adminUser?.user?.isAdmin !== true) {
+  if (adminLoading || !isAdmin) {
     return null;
   }
 
