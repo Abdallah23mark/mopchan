@@ -20,25 +20,39 @@ export function formatDate(date: Date | string): string {
 }
 
 export function formatContent(content: string | any, isAdminPost?: boolean): string {
-  // Ensure we have a valid string
-  const textContent = String(content || '');
+  // Convert to string and handle any object types
+  let textContent: string;
+  if (typeof content === 'string') {
+    textContent = content;
+  } else if (content && typeof content === 'object') {
+    // If it's an object, try to extract meaningful text
+    textContent = content.toString !== Object.prototype.toString ? content.toString() : JSON.stringify(content);
+  } else {
+    textContent = String(content || '');
+  }
   
-  if (!textContent) return "";
+  if (!textContent || textContent === 'null' || textContent === 'undefined') {
+    return "";
+  }
   
+  // Escape HTML first
   let formatted = textContent
+    .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
-    .replace(/\n/g, '<br>');
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+    .replace(/\r?\n/g, '<br>');
   
   // Handle post references (>>123456)
   formatted = formatted.replace(/&gt;&gt;(\d+)/g, '<span class="text-blue-600 hover:text-blue-800 cursor-pointer underline" data-post-id="$1">&gt;&gt;$1</span>');
   
   if (isAdminPost) {
-    // For admin posts, make everything red including greentext
-    formatted = `<span class="text-red-600 font-medium">${formatted}</span>`;
+    // For admin posts, make everything red
+    formatted = `<span class="text-red-600 font-bold">${formatted}</span>`;
   } else {
     // Handle greentext (lines starting with >) for non-admin posts
-    formatted = formatted.replace(/^(&gt;.*$)/gm, '<span class="text-green-600">$1</span>');
+    formatted = formatted.replace(/(^|<br>)(&gt;[^<]*)/g, '$1<span class="text-green-600 font-bold">$2</span>');
   }
   
   return formatted;

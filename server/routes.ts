@@ -243,12 +243,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/admin/ban", authenticateAdmin, async (req: any, res) => {
     try {
-      const { ipAddress, reason, duration } = req.body;
-      const expiresAt = duration ? new Date(Date.now() + duration * 24 * 60 * 60 * 1000) : undefined;
+      const { ipAddress, reason, expiresAt } = req.body;
       
-      const ban = await storage.banIP(ipAddress, reason, req.user.id, expiresAt);
+      if (!ipAddress || !reason) {
+        return res.status(400).json({ message: "IP address and reason are required" });
+      }
+      
+      const ban = await storage.banIP(
+        ipAddress, 
+        reason, 
+        req.user.id, 
+        expiresAt ? new Date(expiresAt) : undefined
+      );
       res.json(ban);
     } catch (error) {
+      console.error("Ban error:", error);
       res.status(500).json({ message: "Failed to ban IP" });
     }
   });
