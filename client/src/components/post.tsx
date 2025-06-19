@@ -3,9 +3,61 @@ import type { Post } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { useAdmin } from "@/hooks/useAdmin";
-import { formatContent } from "@/lib/utils";
 import PostPreview from "./post-preview";
 import BanUserModal from "./ban-user-modal";
+
+// Simple text formatting function that preserves functionality
+function formatContentForDisplay(content: any, isAdminPost?: boolean) {
+  // Ensure we have a string
+  const textContent = typeof content === 'string' ? content : String(content || '');
+  
+  if (!textContent) return null;
+  
+  // Split into lines and process each
+  const lines = textContent.split('\n');
+  
+  return lines.map((line, index) => {
+    // Handle greentext (lines starting with >)
+    if (line.startsWith('>') && !isAdminPost) {
+      // Check if it's a quote link (>>number)
+      if (line.match(/^>>(\d+)/)) {
+        const postId = line.match(/^>>(\d+)/)?.[1];
+        return (
+          <span key={index} className="text-blue-600 hover:text-blue-800 cursor-pointer underline">
+            {line}
+            {index < lines.length - 1 && <br />}
+          </span>
+        );
+      } else {
+        // Regular greentext
+        return (
+          <span key={index} className="text-green-600 font-bold">
+            {line}
+            {index < lines.length - 1 && <br />}
+          </span>
+        );
+      }
+    } else {
+      // Handle quote links in regular text
+      const parts = line.split(/(>>(\d+))/g);
+      return (
+        <span key={index}>
+          {parts.map((part, partIndex) => {
+            if (part.match(/^>>(\d+)$/)) {
+              return (
+                <span key={partIndex} className="text-blue-600 hover:text-blue-800 cursor-pointer underline">
+                  {part}
+                </span>
+              );
+            }
+            return part;
+          })}
+          {index < lines.length - 1 && <br />}
+        </span>
+      );
+    }
+  });
+}
 
 interface PostProps {
   post: Post;
@@ -181,14 +233,10 @@ export default function PostComponent({ post, isOP = false, subject, onQuote, on
           </div>
         )}
         <div 
-          className={`text-xs leading-relaxed ${(post as any).isAdminPost ? 'text-red-600 font-medium' : ''}`}
-          dangerouslySetInnerHTML={{ 
-            __html: formatContent(
-              typeof post.content === 'string' ? post.content : JSON.stringify(post.content) || '', 
-              (post as any).isAdminPost
-            ) 
-          }}
-        />
+          className={`text-xs leading-relaxed whitespace-pre-wrap ${(post as any).isAdminPost ? 'text-red-600 font-bold' : ''}`}
+        >
+          {formatContentForDisplay(post.content, (post as any).isAdminPost)}
+        </div>
       </div>
       
       {hoverPreview && (
