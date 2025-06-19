@@ -1,5 +1,7 @@
+import { useState } from "react";
 import type { Post } from "@shared/schema";
 import { Button } from "@/components/ui/button";
+import PostPreview from "./post-preview";
 
 interface PostProps {
   post: Post;
@@ -10,6 +12,8 @@ interface PostProps {
 }
 
 export default function PostComponent({ post, isOP = false, subject, onQuote, onDelete }: PostProps) {
+  const [hoverPreview, setHoverPreview] = useState<{ postId: string; x: number; y: number } | null>(null);
+
   const formatDate = (date: Date) => {
     return new Date(date).toLocaleDateString("en-US", {
       month: "2-digit",
@@ -65,21 +69,15 @@ export default function PostComponent({ post, isOP = false, subject, onQuote, on
   };
 
   const showPostPreview = (e: React.MouseEvent, postNumber: string) => {
-    // Create a simple tooltip showing post preview
-    const tooltip = document.createElement('div');
-    tooltip.id = 'post-preview';
-    tooltip.className = 'fixed z-50 bg-white border border-gray-400 p-2 text-xs max-w-xs shadow-lg pointer-events-none';
-    tooltip.style.left = e.clientX + 10 + 'px';
-    tooltip.style.top = e.clientY - 10 + 'px';
-    tooltip.textContent = `Post #${postNumber} preview (click to jump)`;
-    document.body.appendChild(tooltip);
+    setHoverPreview({
+      postId: postNumber,
+      x: e.clientX,
+      y: e.clientY
+    });
   };
 
   const hidePostPreview = () => {
-    const tooltip = document.getElementById('post-preview');
-    if (tooltip) {
-      tooltip.remove();
-    }
+    setHoverPreview(null);
   };
 
   const expandImage = (imageUrl: string) => {
@@ -137,6 +135,15 @@ export default function PostComponent({ post, isOP = false, subject, onQuote, on
           {formatContent(post.content)}
         </div>
       </div>
+      
+      {hoverPreview && (
+        <PostPreview
+          postId={hoverPreview.postId}
+          x={hoverPreview.x}
+          y={hoverPreview.y}
+          onClose={hidePostPreview}
+        />
+      )}
     </div>
   );
 }

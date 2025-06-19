@@ -97,7 +97,7 @@ export default function QuickReplyModal({ threadId, trigger }: QuickReplyModalPr
               rows={6}
               placeholder="Comment
 Use >text for greentext
-Use >>123 to quote posts"
+Use >>No. 123 to quote posts"
               className="w-full p-2 text-xs border border-gray-400 font-sans resize-none"
               required
             />
