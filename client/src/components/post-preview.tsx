@@ -65,7 +65,9 @@ export default function PostPreview({ postId, x, y, onClose }: PostPreviewProps)
               content: thread.content,
               imageUrl: thread.imageUrl,
               imageName: thread.imageName,
-              createdAt: thread.createdAt,
+              createdAt: new Date(thread.createdAt),
+              name: (thread as any).name || "Anonymous",
+              tripcode: (thread as any).tripcode || null,
             });
             return;
           }

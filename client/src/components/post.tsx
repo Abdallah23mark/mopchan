@@ -32,19 +32,19 @@ export default function PostComponent({ post, isOP = false, subject, onQuote, on
     return content.split('\n').map((line, index) => {
       if (line.startsWith('>')) {
         if (line.match(/^>>(No\. )?\d+$/)) {
-          // Post quote - red maroon color with hover functionality
+          // Post quote - blue link color with hover functionality
           const postNumber = line.replace(/^>>(No\. )?/, '');
           return (
-            <div 
+            <span 
               key={index} 
-              className="theme-text-quote hover:opacity-75 cursor-pointer inline-block"
+              className="text-blue-600 hover:text-blue-800 cursor-pointer underline"
               onClick={() => scrollToPost(postNumber)}
               onMouseEnter={(e) => showPostPreview(e, postNumber)}
               onMouseLeave={hidePostPreview}
               title={`Click to jump to post ${postNumber}`}
             >
               {line}
-            </div>
+            </span>
           );
         } else {
           // Greentext - green color
@@ -69,10 +69,11 @@ export default function PostComponent({ post, isOP = false, subject, onQuote, on
   };
 
   const showPostPreview = (e: React.MouseEvent, postNumber: string) => {
+    const rect = (e.target as HTMLElement).getBoundingClientRect();
     setHoverPreview({
       postId: postNumber,
-      x: e.clientX,
-      y: e.clientY
+      x: rect.right + 10,
+      y: rect.top
     });
   };
 
