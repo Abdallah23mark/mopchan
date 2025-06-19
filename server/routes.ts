@@ -71,7 +71,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         imageName: req.file ? req.file.originalname : null,
         name: name || "Anonymous",
         tripcode: tripcode || null,
-        isAdminPost: isAdminPost === "true",
+        isAdminPost: Boolean(isAdminPost === "true" || isAdminPost === true),
       };
 
       const validatedData = insertThreadSchema.parse(threadData);
@@ -100,7 +100,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Thread not found" });
       }
 
-      const { content, name, tripcode } = req.body;
+      const { content, name, tripcode, isAdminPost } = req.body;
       
       if (!content || content.trim().length === 0) {
         return res.status(400).json({ message: "Content is required" });
@@ -113,6 +113,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         imageName: req.file ? req.file.originalname : null,
         name: name || "Anonymous",
         tripcode: tripcode || null,
+        isAdminPost: Boolean(isAdminPost === "true" || isAdminPost === true),
       };
 
       const validatedData = insertPostSchema.parse(postData);

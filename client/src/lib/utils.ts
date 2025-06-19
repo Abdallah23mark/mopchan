@@ -19,10 +19,13 @@ export function formatDate(date: Date | string): string {
   });
 }
 
-export function formatContent(content: string, isAdminPost?: boolean): string {
-  if (!content) return "";
+export function formatContent(content: string | any, isAdminPost?: boolean): string {
+  // Ensure content is a string
+  const textContent = typeof content === 'string' ? content : String(content || '');
   
-  let formatted = content
+  if (!textContent) return "";
+  
+  let formatted = textContent
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/\n/g, '<br>');
