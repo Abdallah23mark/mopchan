@@ -23,9 +23,11 @@ export default function AdminStats({ token }: AdminStatsProps) {
   const { data: statsData, isLoading } = useQuery({
     queryKey: ["/api/admin/stats"],
     queryFn: async () => {
-      const response = await apiRequest("/api/admin/stats", {
+      const response = await fetch("/api/admin/stats", {
+        method: "GET",
         headers: { Authorization: `Bearer ${token}` },
       });
+      if (!response.ok) throw new Error("Failed to fetch stats");
       return response.json();
     },
   });

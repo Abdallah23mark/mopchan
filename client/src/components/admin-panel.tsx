@@ -24,16 +24,18 @@ export default function AdminPanel({ user, token, onClose }: AdminPanelProps) {
   const { data: bans = [] } = useQuery({
     queryKey: ["/api/admin/bans"],
     queryFn: async () => {
-      const response = await apiRequest("/api/admin/bans", {
+      const response = await fetch("/api/admin/bans", {
+        method: "GET",
         headers: { Authorization: `Bearer ${token}` },
       });
+      if (!response.ok) throw new Error("Failed to fetch bans");
       return response.json();
     },
   });
 
   const banMutation = useMutation({
     mutationFn: async (data: { ipAddress: string; reason: string; duration?: number }) => {
-      await apiRequest("/api/admin/ban", {
+      const response = await fetch("/api/admin/ban", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -41,6 +43,8 @@ export default function AdminPanel({ user, token, onClose }: AdminPanelProps) {
         },
         body: JSON.stringify(data),
       });
+      if (!response.ok) throw new Error("Failed to ban IP");
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/bans"] });
@@ -94,7 +98,7 @@ export default function AdminPanel({ user, token, onClose }: AdminPanelProps) {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white p-6 rounded border theme-border max-w-2xl w-full mx-4 max-h-96 overflow-y-auto">
+      <div className="bg-white p-6 rounded border theme-border max-w-4xl w-full mx-4 h-5/6 overflow-y-auto">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-lg font-bold">Admin Panel</h2>
           <button 
