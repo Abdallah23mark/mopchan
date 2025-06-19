@@ -35,9 +35,9 @@ function App() {
           </div>
 
           {/* Top Navigation Bar */}
-          <div className="theme-bg-nav border-b theme-border px-4 py-1">
-            <div className="max-w-7xl mx-auto flex justify-between items-center text-xs">
-              <div className="flex gap-4 items-center">
+          <div className="theme-bg-nav border-b theme-border py-1">
+            <div className="flex items-center text-xs">
+              <div className="flex gap-4 items-center px-4">
                 <input
                   type="text"
                   placeholder="Search threads..."
@@ -56,8 +56,14 @@ function App() {
                   <option value="time">Time Posted</option>
                 </select>
               </div>
-              <div className="font-bold flex-1 text-center">catalog</div>
-              <div className="flex gap-2 items-center">
+              
+              <div className="flex-1 flex justify-center">
+                <div className="max-w-7xl w-full flex justify-center">
+                  <div className="font-bold">catalog</div>
+                </div>
+              </div>
+              
+              <div className="flex gap-2 items-center px-4">
                 <button 
                   onClick={() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })}
                   className="bg-gray-300 hover:bg-gray-400 px-2 py-1 cursor-pointer"
