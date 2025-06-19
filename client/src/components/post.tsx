@@ -24,13 +24,16 @@ function formatContentForDisplay(content: any, isAdminPost?: boolean) {
       
       return parts.map((part, partIndex) => {
         if (part.match(/^>>(\d+)$/)) {
-          // Quote link found
+          // Quote link found - format as ">>No. X"
+          const postId = part.match(/^>>(\d+)$/)?.[1];
           return (
             <span 
               key={`${lineIndex}-${partIndex}`} 
               className="text-blue-600 hover:text-blue-800 cursor-pointer underline"
+              onMouseEnter={(e) => showPostPreview(postId!, e.clientX, e.clientY)}
+              onMouseLeave={hidePostPreview}
             >
-              {part}
+              &gt;&gt;No. {postId}
             </span>
           );
         } else if (part === '') {
