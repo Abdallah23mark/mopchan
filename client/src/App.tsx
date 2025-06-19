@@ -11,14 +11,61 @@ import CreateThreadModal from "@/components/create-thread-modal";
 import ThreadWatcher from "@/components/thread-watcher";
 import StyleChooser from "@/components/style-chooser";
 import Chatroom from "@/components/chatroom";
+import AdminLogin from "@/components/admin-login";
+import AdminPanel from "@/components/admin-panel";
+import type { User } from "@shared/schema";
 
 function App() {
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState<"bump" | "reply" | "time">("bump");
+  const [showAdminLogin, setShowAdminLogin] = useState(false);
+  const [showAdminPanel, setShowAdminPanel] = useState(false);
+  const [adminUser, setAdminUser] = useState<User | null>(null);
+  const [adminToken, setAdminToken] = useState<string | null>(null);
+
+  const handleAdminLogin = (user: User, token: string) => {
+    setAdminUser(user);
+    setAdminToken(token);
+  };
+
+  const handleAdminLogout = () => {
+    setAdminUser(null);
+    setAdminToken(null);
+    localStorage.removeItem("adminToken");
+    setShowAdminPanel(false);
+  };
+
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <div className="min-h-screen theme-bg-main">
+          {/* Admin Login Button - Top Left */}
+          <div className="absolute top-2 left-2 z-10">
+            {!adminUser ? (
+              <button
+                onClick={() => setShowAdminLogin(true)}
+                className="text-xs px-2 py-1 bg-gray-200 hover:bg-gray-300 rounded text-gray-700"
+              >
+                Admin
+              </button>
+            ) : (
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setShowAdminPanel(true)}
+                  className="text-xs px-2 py-1 bg-red-100 hover:bg-red-200 rounded text-red-700"
+                >
+                  Admin Panel
+                </button>
+                <button
+                  onClick={handleAdminLogout}
+                  className="text-xs px-2 py-1 bg-gray-200 hover:bg-gray-300 rounded text-gray-700"
+                >
+                  Logout
+                </button>
+              </div>
+            )}
+          </div>
+          
           <StyleChooser />
           {/* Header */}
           <div className="theme-bg-header border-b-2 theme-border p-2 text-center">
@@ -80,6 +127,22 @@ function App() {
           </div>
           <ThreadWatcher />
         </div>
+        
+        {/* Admin Modals */}
+        {showAdminLogin && (
+          <AdminLogin
+            onLogin={handleAdminLogin}
+            onClose={() => setShowAdminLogin(false)}
+          />
+        )}
+        
+        {showAdminPanel && adminUser && adminToken && (
+          <AdminPanel
+            user={adminUser}
+            token={adminToken}
+            onClose={() => setShowAdminPanel(false)}
+          />
+        )}
         
         <Toaster />
       </TooltipProvider>

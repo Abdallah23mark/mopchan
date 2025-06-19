@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, timestamp, boolean, varchar } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -27,6 +27,42 @@ export const posts = pgTable("posts", {
   tripcode: text("tripcode"),
 });
 
+// Admin users table
+export const users = pgTable("users", {
+  id: serial("id").primaryKey(),
+  username: varchar("username", { length: 50 }).unique().notNull(),
+  password: text("password").notNull(),
+  isAdmin: boolean("is_admin").default(false).notNull(),
+  redText: boolean("red_text").default(false).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// IP bans table
+export const ipBans = pgTable("ip_bans", {
+  id: serial("id").primaryKey(),
+  ipAddress: varchar("ip_address", { length: 45 }).unique().notNull(),
+  reason: text("reason"),
+  bannedBy: integer("banned_by").references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  expiresAt: timestamp("expires_at"),
+});
+
+// Thread pins table
+export const threadPins = pgTable("thread_pins", {
+  id: serial("id").primaryKey(),
+  threadId: integer("thread_id").references(() => threads.id).notNull(),
+  pinnedBy: integer("pinned_by").references(() => users.id).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Sessions table for admin login
+export const sessions = pgTable("sessions", {
+  id: varchar("id", { length: 255 }).primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  expiresAt: timestamp("expires_at").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 export const insertThreadSchema = createInsertSchema(threads).omit({
   id: true,
   createdAt: true,
@@ -40,7 +76,23 @@ export const insertPostSchema = createInsertSchema(posts).omit({
   createdAt: true,
 });
 
+export const insertUserSchema = createInsertSchema(users).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertIpBanSchema = createInsertSchema(ipBans).omit({
+  id: true,
+  createdAt: true,
+});
+
 export type InsertThread = z.infer<typeof insertThreadSchema>;
 export type Thread = typeof threads.$inferSelect;
 export type InsertPost = z.infer<typeof insertPostSchema>;
 export type Post = typeof posts.$inferSelect;
+export type User = typeof users.$inferSelect;
+export type InsertUser = z.infer<typeof insertUserSchema>;
+export type IpBan = typeof ipBans.$inferSelect;
+export type InsertIpBan = z.infer<typeof insertIpBanSchema>;
+export type ThreadPin = typeof threadPins.$inferSelect;
+export type Session = typeof sessions.$inferSelect;
