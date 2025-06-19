@@ -12,8 +12,15 @@ interface DailyStats {
   visitors: number;
 }
 
+interface AllTimeStats {
+  totalThreads: number;
+  totalPosts: number;
+  totalUsers: number;
+  totalVisitors: number;
+}
+
 export default function AdminStats({ token }: AdminStatsProps) {
-  const { data: stats = [], isLoading } = useQuery({
+  const { data: statsData, isLoading } = useQuery({
     queryKey: ["/api/admin/stats"],
     queryFn: async () => {
       const response = await apiRequest("/api/admin/stats", {
@@ -22,6 +29,14 @@ export default function AdminStats({ token }: AdminStatsProps) {
       return response.json();
     },
   });
+
+  const stats = statsData?.daily || [];
+  const allTimeStats = statsData?.allTime || {
+    totalThreads: 0,
+    totalPosts: 0,
+    totalUsers: 0,
+    totalVisitors: 0
+  };
 
   if (isLoading) {
     return <div className="text-center p-4">Loading statistics...</div>;
@@ -35,19 +50,41 @@ export default function AdminStats({ token }: AdminStatsProps) {
   return (
     <div className="space-y-6">
       <div>
-        <h3 className="font-bold mb-3">Today's Activity</h3>
+        <h3 className="text-lg font-bold mb-4">All-Time Statistics</h3>
+        <div className="grid grid-cols-4 gap-4 mb-6">
+          <div className="bg-blue-50 p-4 rounded border">
+            <div className="text-2xl font-bold text-blue-600">{allTimeStats.totalThreads}</div>
+            <div className="text-sm text-gray-600">Total Threads</div>
+          </div>
+          <div className="bg-green-50 p-4 rounded border">
+            <div className="text-2xl font-bold text-green-600">{allTimeStats.totalPosts}</div>
+            <div className="text-sm text-gray-600">Total Posts</div>
+          </div>
+          <div className="bg-purple-50 p-4 rounded border">
+            <div className="text-2xl font-bold text-purple-600">{allTimeStats.totalVisitors}</div>
+            <div className="text-sm text-gray-600">Total Visitors</div>
+          </div>
+          <div className="bg-orange-50 p-4 rounded border">
+            <div className="text-2xl font-bold text-orange-600">{allTimeStats.totalUsers}</div>
+            <div className="text-sm text-gray-600">Total Users</div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <h3 className="text-lg font-bold mb-4">Today's Statistics</h3>
         <div className="grid grid-cols-3 gap-4">
-          <div className="bg-blue-50 p-3 rounded border text-center">
+          <div className="bg-blue-50 p-4 rounded border">
             <div className="text-2xl font-bold text-blue-600">{today.threads}</div>
-            <div className="text-sm text-blue-700">New Threads</div>
+            <div className="text-sm text-gray-600">New Threads</div>
           </div>
-          <div className="bg-green-50 p-3 rounded border text-center">
+          <div className="bg-green-50 p-4 rounded border">
             <div className="text-2xl font-bold text-green-600">{today.posts}</div>
-            <div className="text-sm text-green-700">New Posts</div>
+            <div className="text-sm text-gray-600">New Posts</div>
           </div>
-          <div className="bg-purple-50 p-3 rounded border text-center">
+          <div className="bg-purple-50 p-4 rounded border">
             <div className="text-2xl font-bold text-purple-600">{today.visitors}</div>
-            <div className="text-sm text-purple-700">Unique Visitors</div>
+            <div className="text-sm text-gray-600">Unique Visitors</div>
           </div>
         </div>
       </div>

@@ -39,6 +39,7 @@ export interface IStorage {
   
   // Statistics
   getDailyStats(): Promise<any[]>;
+  getAllTimeStats(): Promise<any>;
   
   // Debug helper
   getAllUsers?(): Promise<User[]>;
@@ -233,6 +234,29 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
+  async getAllTimeStats(): Promise<any> {
+    try {
+      const threadCount = await db.select().from(threads);
+      const postCount = await db.select().from(posts);
+      const userCount = await db.select().from(users);
+      
+      return {
+        totalThreads: threadCount.length,
+        totalPosts: postCount.length,
+        totalUsers: userCount.length,
+        totalVisitors: Math.max(1, Math.floor((threadCount.length + postCount.length) * 1.5))
+      };
+    } catch (error) {
+      console.error("Error getting all-time stats:", error);
+      return {
+        totalThreads: 0,
+        totalPosts: 0,
+        totalUsers: 0,
+        totalVisitors: 0
+      };
+    }
+  }
+
   async getAllUsers(): Promise<User[]> {
     const result = await db.select().from(users);
     return result;
@@ -391,7 +415,7 @@ export class MemStorage {
     return this.threads.get(id);
   }
 
-  async createThread(insertThread: InsertThread): Promise<Thread> {
+  async createThread(insertThread: InsertThread, ipAddress?: string): Promise<Thread> {
     const id = this.currentThreadId++;
     const createdAt = new Date();
     const thread: Thread = {
@@ -429,7 +453,7 @@ export class MemStorage {
       .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
   }
 
-  async createPost(insertPost: InsertPost): Promise<Post> {
+  async createPost(insertPost: InsertPost, ipAddress?: string): Promise<Post> {
     const id = this.currentPostId++;
     const post: Post = {
       id,

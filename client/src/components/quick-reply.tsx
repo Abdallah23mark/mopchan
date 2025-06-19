@@ -138,9 +138,10 @@ Use >>No. 123 to quote posts"
             {createPostMutation.isPending ? "Posting..." : "Post Reply"}
           </Button>
           <div className="text-xs text-gray-600">
-            Posting as: <span className="font-bold text-green-600">
+            Posting as: <span className={`font-bold ${isAdminPost ? 'text-red-600' : 'text-green-600'}`}>
               {name.trim() ? parseNameField(name).name : "Anonymous"}
             </span>
+            {isAdminPost && <span className="text-red-600 ml-1">(Admin)</span>}
           </div>
         </div>
       </form>

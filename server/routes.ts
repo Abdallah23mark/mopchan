@@ -221,8 +221,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Admin statistics
   app.get("/api/admin/stats", authenticateAdmin, async (req, res) => {
     try {
-      const stats = await storage.getDailyStats();
-      res.json(stats);
+      const dailyStats = await storage.getDailyStats();
+      const allTimeStats = await storage.getAllTimeStats();
+      res.json({ daily: dailyStats, allTime: allTimeStats });
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch statistics" });
     }
