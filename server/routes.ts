@@ -215,7 +215,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.get("/api/admin/verify", authenticateAdmin, (req: any, res) => {
-    res.json({ user: req.user });
+    res.json({ user: { ...req.user, isAdmin: true } });
   });
 
   // Admin statistics
