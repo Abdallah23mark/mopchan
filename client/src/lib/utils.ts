@@ -20,8 +20,19 @@ export function formatDate(date: Date | string): string {
 }
 
 export function formatContent(content: string | any, isAdminPost?: boolean): string {
-  // Ensure content is a string
-  const textContent = typeof content === 'string' ? content : String(content || '');
+  // Ensure content is a string and handle various data types
+  let textContent = '';
+  
+  if (typeof content === 'string') {
+    textContent = content;
+  } else if (content !== null && content !== undefined) {
+    // Handle objects, arrays, or other types by converting to string
+    try {
+      textContent = typeof content === 'object' ? JSON.stringify(content) : String(content);
+    } catch (e) {
+      textContent = String(content || '');
+    }
+  }
   
   if (!textContent) return "";
   
