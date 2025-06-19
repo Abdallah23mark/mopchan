@@ -58,7 +58,7 @@ function App() {
                   <option value="time">Time Posted</option>
                 </select>
               </div>
-              <div className="font-bold">catalog</div>
+              <div className="font-bold flex-1 text-center">catalog</div>
               <div className="flex gap-2 items-center">
                 <button 
                   onClick={() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })}
@@ -70,7 +70,7 @@ function App() {
             </div>
           </div>
 
-          <div className="p-4">
+          <div className="px-4 pt-6 pb-4">
             <Router />
           </div>
           <ThreadWatcher />
