@@ -87,7 +87,7 @@ export default function ThreadCard({ thread }: ThreadCardProps) {
             </div>
           )}
           <div 
-            className="mb-2 text-black break-words leading-relaxed"
+            className={`mb-2 break-words leading-relaxed ${(thread as any).isAdminPost ? 'text-red-600 font-medium' : 'text-black'}`}
             dangerouslySetInnerHTML={{ __html: formatContent(thread.content || "", (thread as any).isAdminPost) }}
           />
           <div className="text-gray-600 text-xs">

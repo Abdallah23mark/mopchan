@@ -32,9 +32,7 @@ export function formatContent(content: string, isAdminPost?: boolean): string {
   
   if (isAdminPost) {
     // For admin posts, make everything red including greentext
-    formatted = formatted.replace(/^(&gt;.*$)/gm, '<span class="text-red-600 font-medium">$1</span>');
-    // Apply red text to all other content lines
-    formatted = formatted.replace(/^(?!<span)(.*)$/gm, '<span class="text-red-600 font-medium">$1</span>');
+    formatted = `<span class="text-red-600 font-medium">${formatted}</span>`;
   } else {
     // Handle greentext (lines starting with >) for non-admin posts
     formatted = formatted.replace(/^(&gt;.*$)/gm, '<span class="text-green-600">$1</span>');
