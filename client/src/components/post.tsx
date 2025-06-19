@@ -65,7 +65,8 @@ export default function PostComponent({ post, isOP = false, subject, onQuote, on
   };
 
   const scrollToPost = (postNumber: string) => {
-    const element = document.querySelector(`[data-post-id="${postNumber}"]`);
+    const cleanPostNumber = postNumber.replace(/[\r\n\t]/g, '').trim();
+    const element = document.querySelector(`[data-post-id="${cleanPostNumber}"]`);
     if (element) {
       element.scrollIntoView({ behavior: 'smooth', block: 'center' });
       element.classList.add('highlight-post');
@@ -77,6 +78,13 @@ export default function PostComponent({ post, isOP = false, subject, onQuote, on
     // Clean the post number to remove any invalid characters
     const cleanPostNumber = postNumber.replace(/[\r\n\t]/g, '').trim();
     const rect = (e.target as HTMLElement).getBoundingClientRect();
+    
+    // Highlight the referenced post in red
+    const referencedPost = document.querySelector(`[data-post-id="${cleanPostNumber}"]`);
+    if (referencedPost) {
+      referencedPost.classList.add('quote-highlight');
+    }
+    
     setHoverPreview({
       postId: cleanPostNumber,
       x: rect.right + 10,
@@ -85,6 +93,10 @@ export default function PostComponent({ post, isOP = false, subject, onQuote, on
   };
 
   const hidePostPreview = () => {
+    // Remove highlight from any referenced posts
+    const highlightedPosts = document.querySelectorAll('.quote-highlight');
+    highlightedPosts.forEach(post => post.classList.remove('quote-highlight'));
+    
     setHoverPreview(null);
   };
 
