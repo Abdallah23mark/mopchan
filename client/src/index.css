@@ -194,8 +194,8 @@
 
 /* Red highlight when post is being quoted/hovered */
 .quote-highlight {
-  outline: 2px solid #FF0000 !important;
-  outline-offset: 2px !important;
-  background-color: rgba(255, 0, 0, 0.05) !important;
+  border: 2px solid #FF0000 !important;
+  box-shadow: 0 0 8px rgba(255, 0, 0, 0.4) !important;
+  background-color: rgba(255, 0, 0, 0.08) !important;
   transition: all 0.2s ease;
 }

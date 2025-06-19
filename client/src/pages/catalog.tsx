@@ -22,7 +22,8 @@ export default function Catalog({ searchTerm = "", sortBy = "bump" }: CatalogPro
   const sortedThreads = [...filteredThreads].sort((a, b) => {
     switch (sortBy) {
       case "bump":
-        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        // Bump order: most recent reply brings thread to top
+        return new Date(b.bumpedAt).getTime() - new Date(a.bumpedAt).getTime();
       case "reply":
         return b.replyCount - a.replyCount;
       case "time":
