@@ -36,8 +36,8 @@ function App() {
 
           {/* Top Navigation Bar */}
           <div className="theme-bg-nav border-b theme-border py-1">
-            <div className="flex items-center text-xs">
-              <div className="flex gap-4 items-center px-4">
+            <div className="max-w-7xl mx-auto flex items-center justify-between text-xs px-4">
+              <div className="flex gap-4 items-center">
                 <input
                   type="text"
                   placeholder="Search threads..."
@@ -57,13 +57,9 @@ function App() {
                 </select>
               </div>
               
-              <div className="flex-1 flex justify-center">
-                <div className="max-w-7xl w-full flex justify-center">
-                  <div className="font-bold">catalog</div>
-                </div>
-              </div>
+              <div className="font-bold absolute left-1/2 transform -translate-x-1/2">catalog</div>
               
-              <div className="flex gap-2 items-center px-4">
+              <div className="flex gap-2 items-center">
                 <button 
                   onClick={() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })}
                   className="bg-gray-300 hover:bg-gray-400 px-2 py-1 cursor-pointer"
