@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useQuery } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
 
 interface AdminPostToggleProps {
   onToggle: (isAdminPost: boolean) => void;
@@ -37,23 +36,20 @@ export default function AdminPostToggle({ onToggle, defaultValue = false }: Admi
     return null;
   }
 
+  const handleToggle = (checked: boolean) => {
+    setIsAdminPost(checked);
+  };
+
   return (
-    <div className="flex items-center gap-2 text-xs">
-      <Button
-        type="button"
-        size="sm"
-        variant={isAdminPost ? "default" : "outline"}
-        onClick={() => setIsAdminPost(!isAdminPost)}
-        className={isAdminPost ? "bg-red-600 hover:bg-red-700 text-white" : ""}
-        data-admin-post={isAdminPost ? "true" : "false"}
-      >
-        {isAdminPost ? "Admin Post ON" : "Admin Post OFF"}
-      </Button>
-      {isAdminPost && (
-        <span className="text-red-600 text-xs">
-          (Posts with red text)
-        </span>
-      )}
+    <div className="flex items-center space-x-2 text-sm mr-8">
+      <label htmlFor="admin-post" className="text-xs font-medium cursor-pointer">
+        Admin Text
+      </label>
+      <Checkbox
+        id="admin-post"
+        checked={isAdminPost}
+        onCheckedChange={handleToggle}
+      />
     </div>
   );
 }
