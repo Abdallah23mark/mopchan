@@ -70,7 +70,7 @@ function App() {
             </div>
           </div>
 
-          <div className="pt-4">
+          <div className="p-4">
             <Router />
           </div>
           <ThreadWatcher />
