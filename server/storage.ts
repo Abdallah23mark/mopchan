@@ -135,15 +135,17 @@ export class MemStorage implements IStorage {
     
     sampleThreads.forEach((threadData, index) => {
       const id = this.currentThreadId++;
+      const createdAt = new Date(Date.now() - Math.random() * 86400000 * 7);
       const thread: Thread = {
         id,
         subject: threadData.subject,
         content: threadData.content,
         imageUrl: threadData.imageUrl,
         imageName: threadData.imageName,
-        createdAt: new Date(Date.now() - Math.random() * 86400000 * 7), // Random date within last week
-        replyCount: threadData.replyCount,
-        imageCount: threadData.imageCount,
+        createdAt,
+        bumpedAt: createdAt,
+        replyCount: 0,
+        imageCount: 0,
         name: "Anonymous",
         tripcode: null,
       };
@@ -163,13 +165,15 @@ export class MemStorage implements IStorage {
 
   async createThread(insertThread: InsertThread): Promise<Thread> {
     const id = this.currentThreadId++;
+    const createdAt = new Date();
     const thread: Thread = {
       id,
       subject: insertThread.subject || null,
       content: insertThread.content,
       imageUrl: insertThread.imageUrl || null,
       imageName: insertThread.imageName || null,
-      createdAt: new Date(),
+      createdAt,
+      bumpedAt: createdAt,
       replyCount: 0,
       imageCount: insertThread.imageUrl ? 1 : 0,
       name: insertThread.name || "Anonymous",
@@ -225,7 +229,14 @@ export class MemStorage implements IStorage {
   async incrementThreadReplies(threadId: number): Promise<void> {
     const thread = this.threads.get(threadId);
     if (thread) {
-      thread.replyCount++;
+      // Count actual posts for this thread
+      const posts = Array.from(this.posts.values()).filter(p => p.threadId === threadId);
+      thread.replyCount = posts.length;
+      // Update bump time to most recent post
+      const mostRecentPost = posts.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())[0];
+      if (mostRecentPost) {
+        thread.bumpedAt = mostRecentPost.createdAt;
+      }
       this.threads.set(threadId, thread);
     }
   }
@@ -233,7 +244,10 @@ export class MemStorage implements IStorage {
   async incrementThreadImages(threadId: number): Promise<void> {
     const thread = this.threads.get(threadId);
     if (thread) {
-      thread.imageCount++;
+      // Count actual images in posts for this thread
+      const posts = Array.from(this.posts.values()).filter(p => p.threadId === threadId);
+      const imageCount = posts.filter(p => p.imageUrl).length;
+      thread.imageCount = imageCount;
       this.threads.set(threadId, thread);
     }
   }

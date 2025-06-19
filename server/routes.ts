@@ -117,6 +117,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const validatedData = insertPostSchema.parse(postData);
       const post = await storage.createPost(validatedData);
       
+      // Update thread counts
+      await storage.incrementThreadReplies(threadId);
+      if (validatedData.imageUrl) {
+        await storage.incrementThreadImages(threadId);
+      }
+      
       res.status(201).json(post);
     } catch (error) {
       if (error instanceof z.ZodError) {
