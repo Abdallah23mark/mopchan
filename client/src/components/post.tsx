@@ -30,14 +30,8 @@ function formatContentForDisplay(content: any, isAdminPost?: boolean) {
             <span 
               key={`${lineIndex}-${partIndex}`} 
               className="text-blue-600 hover:text-blue-800 cursor-pointer underline"
-              onMouseEnter={(e) => {
-                // Quote link hover functionality
-                console.log('Hovering over post', postId);
-              }}
-              onMouseLeave={() => {
-                // Hide preview
-                console.log('Stop hovering');
-              }}
+              onMouseEnter={(e) => showPostPreview(postId!, e.clientX, e.clientY)}
+              onMouseLeave={hidePostPreview}
             >
               &gt;&gt;No. {postId}
             </span>
@@ -101,6 +95,30 @@ export default function PostComponent({ post, isOP = false, subject, onQuote, on
 
   const expandImage = (imageUrl: string) => {
     setExpandedImage(imageUrl);
+  };
+
+  const showPostPreview = (postId: string, x: number, y: number) => {
+    // Highlight the referenced post if it exists on the page
+    const referencedPost = document.querySelector(`[data-post-id="${postId}"]`);
+    if (referencedPost) {
+      referencedPost.classList.add('bg-red-100', 'border-red-300');
+    }
+    
+    setHoverPreview({
+      postId,
+      x,
+      y,
+    });
+  };
+
+  const hidePostPreview = () => {
+    // Remove highlighting from all posts
+    const highlightedPosts = document.querySelectorAll('.bg-red-100');
+    highlightedPosts.forEach(post => {
+      post.classList.remove('bg-red-100', 'border-red-300');
+    });
+    
+    setHoverPreview(null);
   };
 
   return (

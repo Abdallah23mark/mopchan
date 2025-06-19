@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import type { Post, Thread } from "@shared/schema";
+import type { Post } from "@shared/schema";
+import { formatDate } from "@/lib/utils";
 
 interface PostPreviewProps {
   postId: string;
@@ -10,169 +10,151 @@ interface PostPreviewProps {
 }
 
 export default function PostPreview({ postId, x, y, onClose }: PostPreviewProps) {
-  const [postData, setPostData] = useState<Post | null>(null);
+  // Clean the post ID
+  const cleanPostId = postId.replace(/[\r\n\t]/g, '').trim();
 
-  // Try to find the post in the current page first
-  useEffect(() => {
-    const postElement = document.querySelector(`[data-post-id="${postId}"]`);
-    if (postElement) {
-      // Extract post data from the DOM if available
-      const postIdNum = parseInt(postId);
-      // For now, we'll fetch from API since we don't have easy access to post data
+  // Query to get all threads to search for the post
+  const { data: threadsData } = useQuery({
+    queryKey: ['/api/threads'],
+  });
+
+  // Try to find which thread contains this post
+  let foundPost: Post | null = null;
+  let threadId: number | null = null;
+
+  if (threadsData) {
+    for (const thread of threadsData) {
+      if (thread.id.toString() === cleanPostId || 
+          (thread.replyCount > 0 && parseInt(cleanPostId) >= thread.id)) {
+        threadId = thread.id;
+        break;
+      }
     }
-  }, [postId]);
+  }
 
-  useEffect(() => {
-    // Clean postId to remove any invalid characters
-    const cleanPostId = postId.replace(/[\r\n\t]/g, '').trim();
-    
-    // First check if the post is already visible on the current page
-    try {
-      const postElement = document.querySelector(`[data-post-id="${cleanPostId}"]`);
-      if (postElement) {
-        // Try to extract data from the current page
-        const contentElement = postElement.querySelector('.text-xs.leading-relaxed');
-        const timeElement = postElement.querySelector('.text-gray-600');
-        const imageElement = postElement.querySelector('img');
-        const nameElement = postElement.querySelector('.theme-text-green');
-        
-        if (contentElement && timeElement) {
-          setPostData({
-            id: parseInt(cleanPostId),
-            threadId: 0, // We don't need this for preview
-            content: contentElement.textContent || '',
-            imageUrl: imageElement?.getAttribute('src') || null,
-            imageName: imageElement?.getAttribute('alt') || null,
-            createdAt: new Date(), // Use current time for simplicity
-            name: nameElement?.textContent?.split('!')[0] || "Anonymous",
-            tripcode: nameElement?.textContent?.includes('!') ? nameElement.textContent.split('!')[1] : null,
-          });
-          return;
-        }
-      }
-    } catch (error) {
-      console.error('Error querying DOM for post preview:', error);
+  // Query the specific thread if we found a candidate
+  const { data: threadData, isLoading } = useQuery({
+    queryKey: [`/api/threads/${threadId}`],
+    enabled: !!threadId,
+  });
+
+  // Find the post in the thread data
+  if (threadData?.posts) {
+    foundPost = threadData.posts.find((p: Post) => p.id.toString() === cleanPostId) || null;
+    // Also check if it's the OP
+    if (!foundPost && threadData.thread.id.toString() === cleanPostId) {
+      foundPost = {
+        id: threadData.thread.id,
+        threadId: threadData.thread.id,
+        content: threadData.thread.content,
+        imageUrl: threadData.thread.imageUrl,
+        imageName: threadData.thread.imageName,
+        createdAt: threadData.thread.createdAt,
+        name: threadData.thread.name,
+        tripcode: threadData.thread.tripcode,
+      } as Post;
     }
+  }
 
-    // If not found on current page, search through API
-    const findPost = async () => {
-      try {
-        // Get all threads first
-        const threadsResponse = await fetch('/api/threads');
-        if (!threadsResponse.ok) return;
-        
-        const threads = await threadsResponse.json();
-        
-        for (const thread of threads) {
-          // Check if it's the OP
-          if (thread.id.toString() === cleanPostId) {
-            setPostData({
-              id: thread.id,
-              threadId: thread.id,
-              content: thread.content,
-              imageUrl: thread.imageUrl,
-              imageName: thread.imageName,
-              createdAt: new Date(thread.createdAt),
-              name: (thread as any).name || "Anonymous",
-              tripcode: (thread as any).tripcode || null,
-            });
-            return;
-          }
-          
-          // Check posts in this thread
-          try {
-            const response = await fetch(`/api/threads/${thread.id}`);
-            if (response.ok) {
-              const data = await response.json();
-              const post = data.posts.find((p: Post) => p.id.toString() === cleanPostId);
-              if (post) {
-                setPostData(post);
-                return;
-              }
-            }
-          } catch (error) {
-            console.error('Error fetching thread:', error);
-          }
-        }
-      } catch (error) {
-        console.error('Error finding post:', error);
-      }
-    };
-    
-    findPost();
-  }, [postId]);
-
-  const formatDate = (date: Date) => {
-    return new Date(date).toLocaleDateString("en-US", {
-      month: "2-digit",
-      day: "2-digit",
-      year: "2-digit",
-      weekday: "short",
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-      hour12: false,
-    });
-  };
-
-  const formatContent = (content: string) => {
-    return content.split('\n').map((line, index) => {
-      if (line.startsWith('>')) {
-        if (line.match(/^>>(No\. )?\d+$/)) {
-          return (
-            <div key={index} className="theme-text-quote">
-              {line}
-            </div>
-          );
-        } else {
-          return (
-            <div key={index} className="theme-text-green">
-              {line}
-            </div>
-          );
-        }
-      }
-      return <div key={index}>{line || "\u00A0"}</div>;
-    });
-  };
-
-  if (!postData) {
+  if (isLoading) {
     return (
       <div
-        className="fixed z-50 theme-bg-post theme-border border p-2 text-xs max-w-xs shadow-lg pointer-events-none"
-        style={{ left: x + 10, top: y - 10 }}
+        className="absolute bg-white border-2 border-red-500 p-3 shadow-lg z-50 max-w-md"
+        style={{ left: x, top: y }}
+        onMouseEnter={(e) => e.stopPropagation()}
+        onClick={onClose}
       >
-        Loading post #{postId}...
+        <div className="text-sm">Loading post preview...</div>
       </div>
     );
   }
 
+  if (!foundPost) {
+    return (
+      <div
+        className="absolute bg-white border-2 border-red-500 p-3 shadow-lg z-50 max-w-md"
+        style={{ left: x, top: y }}
+        onMouseEnter={(e) => e.stopPropagation()}
+        onClick={onClose}
+      >
+        <div className="text-sm text-red-500">Post #{cleanPostId} not found</div>
+      </div>
+    );
+  }
+
+  const formatContent = (content: string) => {
+    if (!content) return "";
+    
+    return content.split('\n').map((line, index) => {
+      // Handle greentext
+      if (line.startsWith('>') && !line.startsWith('>>')) {
+        return (
+          <div key={index} className="text-green-600 font-bold">
+            {line}
+          </div>
+        );
+      }
+      
+      // Handle quote links
+      const parts = line.split(/(>>(\d+))/g);
+      return (
+        <div key={index}>
+          {parts.map((part, partIndex) => {
+            if (part.match(/^>>(\d+)$/)) {
+              const quotedId = part.match(/^>>(\d+)$/)?.[1];
+              return (
+                <span key={partIndex} className="text-blue-600 underline">
+                  &gt;&gt;No. {quotedId}
+                </span>
+              );
+            }
+            return part;
+          })}
+        </div>
+      );
+    });
+  };
+
   return (
     <div
-      className="fixed z-50 theme-bg-post theme-border border p-3 text-xs max-w-sm shadow-lg pointer-events-none"
-      style={{ left: x + 10, top: y - 10 }}
+      className="absolute bg-white border-2 border-red-500 p-3 shadow-lg z-50 max-w-md cursor-pointer"
+      style={{ 
+        left: Math.min(x, window.innerWidth - 400), 
+        top: Math.min(y, window.innerHeight - 200) 
+      }}
+      onMouseEnter={(e) => e.stopPropagation()}
+      onClick={onClose}
     >
-      <div className="flex flex-col gap-2">
-        {postData.imageUrl && (
-          <img
-            src={postData.imageUrl}
-            alt={postData.imageName || "Post image"}
-            className="max-w-full max-h-32 object-contain"
-          />
-        )}
-        <div>
-          <div className="mb-1">
-            <span className="font-bold theme-text-green">
-              {(postData as any).name || "Anonymous"}
-              {(postData as any).tripcode && <span className="theme-text-quote"> !{(postData as any).tripcode}</span>}
+      <div className="mb-2 text-xs">
+        <span className="font-bold text-green-600">
+          {foundPost.name || "Anonymous"}
+          {foundPost.tripcode && (
+            <span className="text-blue-600">
+              {' '}!{foundPost.tripcode}
             </span>
-            <span className="text-gray-600 ml-2">{formatDate(postData.createdAt)}</span>
-            <span className="text-blue-600 ml-2">No. {postData.id}</span>
-          </div>
-          <div className="leading-relaxed">
-            {formatContent(postData.content)}
-          </div>
+          )}
+        </span>
+        <span className="text-gray-600 ml-2">{formatDate(foundPost.createdAt)}</span>
+        <span className="text-blue-600 ml-2">No. {foundPost.id}</span>
+      </div>
+      
+      {foundPost.imageUrl && (
+        <div className="mb-2">
+          <img
+            src={foundPost.imageUrl}
+            alt={foundPost.imageName || "Post image"}
+            className="max-w-full max-h-32 border cursor-pointer"
+          />
+          {foundPost.imageName && (
+            <div className="text-xs text-gray-600 mt-1">
+              {foundPost.imageName}
+            </div>
+          )}
         </div>
+      )}
+      
+      <div className="text-xs leading-relaxed max-h-32 overflow-y-auto">
+        {formatContent(foundPost.content)}
       </div>
     </div>
   );
