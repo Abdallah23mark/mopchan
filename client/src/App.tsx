@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Switch, Route } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -11,18 +12,9 @@ import ThreadWatcher from "@/components/thread-watcher";
 import StyleChooser from "@/components/style-chooser";
 import Chatroom from "@/components/chatroom";
 
-function Router() {
-  return (
-    <Switch>
-      <Route path="/" component={Catalog} />
-      <Route path="/catalog" component={Catalog} />
-      <Route path="/thread/:id" component={Thread} />
-      <Route component={NotFound} />
-    </Switch>
-  );
-}
-
 function App() {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortBy, setSortBy] = useState<"bump" | "reply" | "time">("bump");
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
@@ -44,15 +36,21 @@ function App() {
 
           {/* Top Navigation Bar */}
           <div className="theme-bg-nav border-b theme-border px-4 py-1">
-            <div className="flex justify-between items-center text-xs">
+            <div className="max-w-7xl mx-auto flex justify-between items-center text-xs">
               <div className="flex gap-4 items-center">
                 <input
                   type="text"
                   placeholder="Search threads..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
                   className="bg-white border px-2 py-1 text-xs"
                   style={{ minWidth: '120px' }}
                 />
-                <select className="bg-white border px-2 py-1 text-xs">
+                <select 
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value as "bump" | "reply" | "time")}
+                  className="bg-white border px-2 py-1 text-xs"
+                >
                   <option value="bump">Bump Order</option>
                   <option value="reply">Reply Count</option>
                   <option value="time">Time Posted</option>
@@ -70,8 +68,13 @@ function App() {
             </div>
           </div>
 
-          <div className="px-4 pt-6 pb-4">
-            <Router />
+          <div className="px-4 pt-4 pb-4">
+            <Switch>
+              <Route path="/" component={() => <Catalog searchTerm={searchTerm} sortBy={sortBy} />} />
+              <Route path="/catalog" component={() => <Catalog searchTerm={searchTerm} sortBy={sortBy} />} />
+              <Route path="/thread/:id" component={Thread} />
+              <Route component={NotFound} />
+            </Switch>
           </div>
           <ThreadWatcher />
         </div>

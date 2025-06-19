@@ -80,7 +80,7 @@ export default function ThreadCard({ thread }: ThreadCardProps) {
             {formatContent(thread.content)}
           </div>
           <div className="text-gray-600 text-xs">
-            R: {thread.replyCount} / I: {thread.imageCount}
+            R: {thread.replyCount} / I: {thread.imageUrl ? thread.imageCount + 1 : thread.imageCount}
           </div>
         </div>
       </div>
