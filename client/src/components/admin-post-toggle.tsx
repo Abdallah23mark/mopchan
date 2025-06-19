@@ -43,6 +43,7 @@ export default function AdminPostToggle({ onToggle, defaultValue = false }: Admi
         variant={isAdminPost ? "default" : "outline"}
         onClick={() => setIsAdminPost(!isAdminPost)}
         className={isAdminPost ? "bg-red-600 hover:bg-red-700 text-white" : ""}
+        data-admin-post={isAdminPost ? "true" : "false"}
       >
         {isAdminPost ? "Admin Post ON" : "Admin Post OFF"}
       </Button>

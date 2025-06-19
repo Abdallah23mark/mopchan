@@ -18,11 +18,17 @@ export default function AdminLogin({ onLogin, onClose }: AdminLoginProps) {
 
   const loginMutation = useMutation({
     mutationFn: async (credentials: { username: string; password: string }) => {
-      const response = await apiRequest("/api/admin/login", {
+      const response = await fetch("/api/admin/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(credentials),
       });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Login failed");
+      }
+      
       return response.json();
     },
     onSuccess: (data) => {
@@ -34,10 +40,11 @@ export default function AdminLogin({ onLogin, onClose }: AdminLoginProps) {
       });
       onClose();
     },
-    onError: () => {
+    onError: (error: any) => {
+      console.error("Login error:", error);
       toast({
-        title: "Login failed",
-        description: "Invalid credentials",
+        title: "Login failed", 
+        description: error.message || "Invalid credentials",
         variant: "destructive",
       });
     },
@@ -45,8 +52,15 @@ export default function AdminLogin({ onLogin, onClose }: AdminLoginProps) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("Attempting login with:", { username: username.trim(), password: "***" });
     if (username.trim() && password.trim()) {
       loginMutation.mutate({ username: username.trim(), password });
+    } else {
+      toast({
+        title: "Missing fields",
+        description: "Please enter both username and password",
+        variant: "destructive",
+      });
     }
   };
 

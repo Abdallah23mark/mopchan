@@ -39,6 +39,9 @@ export interface IStorage {
   
   // Statistics
   getDailyStats(): Promise<any[]>;
+  
+  // Debug helper
+  getAllUsers?(): Promise<User[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -228,6 +231,11 @@ export class DatabaseStorage implements IStorage {
       console.error("Error getting daily stats:", error);
       return [];
     }
+  }
+
+  async getAllUsers(): Promise<User[]> {
+    const result = await db.select().from(users);
+    return result;
   }
 }
 
