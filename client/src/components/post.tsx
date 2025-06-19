@@ -28,26 +28,31 @@ export default function PostComponent({ post, isOP = false, subject, onQuote, on
   };
 
   const formatContent = (content: string) => {
-    // Convert >quotes to greentext
+    // Convert >quotes to greentext and >>post references to blue links
     return content.split('\n').map((line, index) => {
       if (line.startsWith('>')) {
-        if (line.match(/^>>(No\. )?\d+$/)) {
+        // Check if it's a post reference (>>123456 or >>No. 123456)
+        if (line.match(/^>>(No\. )?\d+/)) {
           // Post quote - blue link color with hover functionality
-          const postNumber = line.replace(/^>>(No\. )?/, '');
+          const postNumber = line.replace(/^>>(No\. )?/, '').split(' ')[0]; // Get just the number part
           return (
-            <span 
-              key={index} 
-              className="text-blue-600 hover:text-blue-800 cursor-pointer underline"
-              onClick={() => scrollToPost(postNumber)}
-              onMouseEnter={(e) => showPostPreview(e, postNumber)}
-              onMouseLeave={hidePostPreview}
-              title={`Click to jump to post ${postNumber}`}
-            >
-              {line}
-            </span>
+            <div key={index}>
+              <span 
+                className="text-blue-600 hover:text-blue-800 cursor-pointer underline"
+                onClick={() => scrollToPost(postNumber)}
+                onMouseEnter={(e) => showPostPreview(e, postNumber)}
+                onMouseLeave={hidePostPreview}
+                title={`Click to jump to post ${postNumber}`}
+              >
+                {line.match(/^>>(No\. )?\d+$/) ? line : line.replace(/^(>>(No\. )?\d+)/, '$1')}
+              </span>
+              {line.replace(/^>>(No\. )?\d+\s*/, '').trim() && (
+                <span className="ml-1">{line.replace(/^>>(No\. )?\d+\s*/, '')}</span>
+              )}
+            </div>
           );
         } else {
-          // Greentext - green color
+          // Regular greentext - green color
           return (
             <div key={index} className="theme-text-green">
               {line}
