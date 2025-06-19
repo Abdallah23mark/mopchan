@@ -6,7 +6,7 @@ import BanUserModal from "./ban-user-modal";
 import { useQuery } from "@tanstack/react-query";
 
 // Simple text formatting function that preserves functionality
-function formatContentForDisplay(content: any, isAdminPost?: boolean) {
+function formatContentForDisplay(content: any, isAdminPost?: boolean, showPreview?: (id: string, x: number, y: number) => void, hidePreview?: () => void) {
   // Ensure we have a string
   const textContent = typeof content === 'string' ? content : String(content || '');
   
@@ -29,8 +29,7 @@ function formatContentForDisplay(content: any, isAdminPost?: boolean) {
             <span 
               key={`${lineIndex}-${partIndex}`} 
               className="text-blue-600 hover:text-blue-800 cursor-pointer underline"
-              onMouseEnter={(e) => showPostPreview(postId!, e.clientX, e.clientY)}
-              onMouseLeave={hidePostPreview}
+
               onClick={() => {
                 const element = document.querySelector(`[data-post-id="${postId}"]`);
                 if (element) {
@@ -209,7 +208,7 @@ export default function PostComponent({ post, isOP = false, subject, onQuote, on
         <div 
           className={`text-xs leading-relaxed whitespace-pre-wrap post-content ${(post as any).isAdminPost ? 'text-red-600 font-bold' : ''}`}
         >
-          {formatContentForDisplay(post.content, (post as any).isAdminPost)}
+          {formatContentForDisplay(post.content, (post as any).isAdminPost, showPostPreview, hidePostPreview)}
         </div>
       </div>
       
