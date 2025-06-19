@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { Post } from "@shared/schema";
 import { Button } from "@/components/ui/button";
+import { useQuery } from "@tanstack/react-query";
 import PostPreview from "./post-preview";
 
 interface PostProps {
@@ -13,6 +14,23 @@ interface PostProps {
 
 export default function PostComponent({ post, isOP = false, subject, onQuote, onDelete }: PostProps) {
   const [hoverPreview, setHoverPreview] = useState<{ postId: string; x: number; y: number } | null>(null);
+
+  // Check if user is admin
+  const { data: adminUser } = useQuery({
+    queryKey: ["/api/admin/verify"],
+    queryFn: async () => {
+      const token = localStorage.getItem("adminToken");
+      if (!token) return null;
+      
+      const response = await fetch("/api/admin/verify", {
+        method: "GET",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!response.ok) return null;
+      return response.json();
+    },
+    retry: false,
+  });
 
   const formatDate = (date: Date) => {
     return new Date(date).toLocaleDateString("en-US", {
@@ -147,7 +165,16 @@ export default function PostComponent({ post, isOP = false, subject, onQuote, on
           >
             [Quote]
           </Button>
-          {/* Admin-only delete button will be added here */}
+          {adminUser?.user && (
+            <Button
+              onClick={() => onDelete()}
+              variant="outline"
+              size="sm"
+              className="ml-2 text-xs bg-red-200 px-1 hover:bg-red-300 h-auto py-0 text-red-600"
+            >
+              [Delete]
+            </Button>
+          )}
         </div>
         {subject && isOP && (
           <div className="font-bold text-sm mb-2 text-blue-600">
