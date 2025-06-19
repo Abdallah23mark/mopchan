@@ -32,8 +32,21 @@ export default function ThreadCard({ thread }: ThreadCardProps) {
   };
 
   const formatDate = (date: Date) => {
-    const d = new Date(date);
-    return `${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getDate().toString().padStart(2, '0')}/${d.getFullYear().toString().slice(-2)}`;
+    const now = new Date();
+    const threadDate = new Date(date);
+    const diffInMinutes = Math.floor((now.getTime() - threadDate.getTime()) / (1000 * 60));
+    
+    if (diffInMinutes < 1) {
+      return "Just now";
+    } else if (diffInMinutes < 60) {
+      return `${diffInMinutes} minute${diffInMinutes !== 1 ? 's' : ''} ago`;
+    } else if (diffInMinutes < 1440) {
+      const hours = Math.floor(diffInMinutes / 60);
+      return `${hours} hour${hours !== 1 ? 's' : ''} ago`;
+    } else {
+      const days = Math.floor(diffInMinutes / 1440);
+      return `${days} day${days !== 1 ? 's' : ''} ago`;
+    }
   };
 
   return (

@@ -81,10 +81,8 @@ export default function PostComponent({ post, isOP = false, subject, onQuote, on
     
     // Highlight the referenced post in red
     const referencedPost = document.querySelector(`[data-post-id="${cleanPostNumber}"]`);
-    console.log('Looking for post:', cleanPostNumber, 'Found:', referencedPost);
     if (referencedPost) {
       referencedPost.classList.add('quote-highlight');
-      console.log('Added quote-highlight class to:', referencedPost);
     }
     
     setHoverPreview({
