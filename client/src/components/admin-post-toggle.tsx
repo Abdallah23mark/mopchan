@@ -18,9 +18,11 @@ export default function AdminPostToggle({ onToggle, defaultValue = false }: Admi
       const token = localStorage.getItem("adminToken");
       if (!token) return null;
       
-      const response = await apiRequest("/api/admin/verify", {
+      const response = await fetch("/api/admin/verify", {
+        method: "GET",
         headers: { Authorization: `Bearer ${token}` },
       });
+      if (!response.ok) return null;
       return response.json();
     },
     retry: false,
