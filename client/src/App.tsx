@@ -9,6 +9,7 @@ import NotFound from "@/pages/not-found";
 import CreateThreadModal from "@/components/create-thread-modal";
 import ThreadWatcher from "@/components/thread-watcher";
 import StyleChooser from "@/components/style-chooser";
+import Chatroom from "@/components/chatroom";
 
 function Router() {
   return (
@@ -33,10 +34,11 @@ function App() {
               <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cpath fill='%23228B22' d='M16 4c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12S22.627 4 16 4zm0 20c-4.418 0-8-3.582-8-8s3.582-8 8-8 8 3.582 8 8-3.582 8-8 8z'/%3E%3Cpath fill='%2300CED1' d='M16 8c-4.418 0-8 3.582-8 8s3.582 8 8 8 8-3.582 8-8-3.582-8-8-8zm0 12c-2.209 0-4-1.791-4-4s1.791-4 4-4 4 1.791 4 4-1.791 4-4 4z'/%3E%3C/svg%3E" alt="Mopchan" className="w-8 h-8" />
               <h1 className="text-2xl font-bold theme-text-main">Mopchan</h1>
             </div>
-            <div className="text-sm mt-1 text-blue-600">
+            <div className="text-sm mt-1 text-blue-600 flex flex-col items-center">
               <CreateThreadModal
                 trigger={<button className="underline">[post a thread]</button>}
               />
+              <Chatroom />
             </div>
           </div>
 

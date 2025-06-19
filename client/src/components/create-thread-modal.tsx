@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import FileInputButton from "./file-input-button";
+import { parseNameField } from "@/utils/tripcode";
 
 interface CreateThreadModalProps {
   trigger: React.ReactNode;
@@ -20,6 +21,7 @@ export default function CreateThreadModal({ trigger }: CreateThreadModalProps) {
   const [subject, setSubject] = useState("");
   const [content, setContent] = useState("");
   const [image, setImage] = useState<File | null>(null);
+  const [name, setName] = useState("");
 
   const createThreadMutation = useMutation({
     mutationFn: async (formData: FormData) => {
@@ -42,6 +44,7 @@ export default function CreateThreadModal({ trigger }: CreateThreadModalProps) {
       setSubject("");
       setContent("");
       setImage(null);
+      setName("");
       // Navigate to the new thread
       window.location.href = `/thread/${thread.id}`;
     },
@@ -66,6 +69,10 @@ export default function CreateThreadModal({ trigger }: CreateThreadModalProps) {
     if (subject.trim()) formData.append("subject", subject.trim());
     formData.append("content", content.trim());
     if (image) formData.append("image", image);
+    
+    const { name: parsedName, tripcode } = parseNameField(name);
+    formData.append("name", parsedName);
+    if (tripcode) formData.append("tripcode", tripcode);
 
     createThreadMutation.mutate(formData);
   };
@@ -81,6 +88,18 @@ export default function CreateThreadModal({ trigger }: CreateThreadModalProps) {
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <Label className="block text-xs font-bold mb-1">Name (Optional)</Label>
+            <Input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              maxLength={50}
+              placeholder="Anonymous (add #password for tripcode)"
+              className="w-full p-2 text-xs border border-gray-400 font-sans"
+            />
+          </div>
+          
           <div>
             <Label className="block text-xs font-bold mb-1">Subject (Optional)</Label>
             <Input

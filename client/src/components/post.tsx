@@ -106,7 +106,10 @@ export default function PostComponent({ post, isOP = false, subject, onQuote, on
       )}
       <div className="flex-1">
         <div className="mb-2 text-xs">
-          <span className="font-bold theme-text-green">Anonymous</span>
+          <span className="font-bold theme-text-green">
+            {(post as any).name || "Anonymous"}
+            {(post as any).tripcode && <span className="theme-text-quote"> !{(post as any).tripcode}</span>}
+          </span>
           <span className="text-gray-600 ml-2">{formatDate(post.createdAt)}</span>
           <span className="text-blue-600 ml-2">No. {post.id}</span>
           <Button

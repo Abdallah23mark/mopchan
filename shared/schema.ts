@@ -11,6 +11,8 @@ export const threads = pgTable("threads", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
   replyCount: integer("reply_count").default(0).notNull(),
   imageCount: integer("image_count").default(0).notNull(),
+  name: text("name").default("Anonymous"),
+  tripcode: text("tripcode"),
 });
 
 export const posts = pgTable("posts", {
@@ -20,6 +22,8 @@ export const posts = pgTable("posts", {
   imageUrl: text("image_url"),
   imageName: text("image_name"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
+  name: text("name").default("Anonymous"),
+  tripcode: text("tripcode"),
 });
 
 export const insertThreadSchema = createInsertSchema(threads).omit({

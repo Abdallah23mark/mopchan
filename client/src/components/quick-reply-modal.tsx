@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import FileInputButton from "./file-input-button";
+import { parseNameField } from "@/utils/tripcode";
 
 interface QuickReplyModalProps {
   threadId: number;
@@ -20,6 +21,7 @@ export default function QuickReplyModal({ threadId, trigger }: QuickReplyModalPr
   const [open, setOpen] = useState(false);
   const [content, setContent] = useState("");
   const [image, setImage] = useState<File | null>(null);
+  const [name, setName] = useState("");
 
   // Check for pending quotes when modal opens
   useEffect(() => {
@@ -52,6 +54,7 @@ export default function QuickReplyModal({ threadId, trigger }: QuickReplyModalPr
       toast({ title: "Reply posted successfully!" });
       setContent("");
       setImage(null);
+      setName("");
       setOpen(false);
     },
     onError: (error) => {
@@ -74,6 +77,10 @@ export default function QuickReplyModal({ threadId, trigger }: QuickReplyModalPr
     const formData = new FormData();
     formData.append("content", content.trim());
     if (image) formData.append("image", image);
+    
+    const { name: parsedName, tripcode } = parseNameField(name);
+    formData.append("name", parsedName);
+    if (tripcode) formData.append("tripcode", tripcode);
 
     createPostMutation.mutate(formData);
   };
@@ -89,6 +96,18 @@ export default function QuickReplyModal({ threadId, trigger }: QuickReplyModalPr
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-3">
+          <div>
+            <Label className="block text-xs font-bold mb-1">Name (Optional)</Label>
+            <Input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              maxLength={50}
+              placeholder="Anonymous (add #password for tripcode)"
+              className="w-full p-2 text-xs border border-gray-400 font-sans"
+            />
+          </div>
+          
           <div>
             <Textarea
               name="content"

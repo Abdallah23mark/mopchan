@@ -22,16 +22,55 @@ export default function PostPreview({ postId, x, y, onClose }: PostPreviewProps)
     }
   }, [postId]);
 
-  // Fetch post data - we'll need to search through threads
-  const { data: threads } = useQuery<Thread[]>({
-    queryKey: ["/api/threads"],
-  });
-
   useEffect(() => {
-    if (threads) {
-      // Find the post by searching through all threads
-      const findPost = async () => {
+    // First check if the post is already visible on the current page
+    const postElement = document.querySelector(`[data-post-id="${postId}"]`);
+    if (postElement) {
+      // Try to extract data from the current page
+      const contentElement = postElement.querySelector('.text-xs.leading-relaxed');
+      const timeElement = postElement.querySelector('.text-gray-600');
+      const imageElement = postElement.querySelector('img');
+      const nameElement = postElement.querySelector('.theme-text-green');
+      
+      if (contentElement && timeElement) {
+        setPostData({
+          id: parseInt(postId),
+          threadId: 0, // We don't need this for preview
+          content: contentElement.textContent || '',
+          imageUrl: imageElement?.getAttribute('src') || null,
+          imageName: imageElement?.getAttribute('alt') || null,
+          createdAt: new Date(), // Use current time for simplicity
+          name: nameElement?.textContent?.split('!')[0] || "Anonymous",
+          tripcode: nameElement?.textContent?.includes('!') ? nameElement.textContent.split('!')[1] : null,
+        });
+        return;
+      }
+    }
+
+    // If not found on current page, search through API
+    const findPost = async () => {
+      try {
+        // Get all threads first
+        const threadsResponse = await fetch('/api/threads');
+        if (!threadsResponse.ok) return;
+        
+        const threads = await threadsResponse.json();
+        
         for (const thread of threads) {
+          // Check if it's the OP
+          if (thread.id.toString() === postId) {
+            setPostData({
+              id: thread.id,
+              threadId: thread.id,
+              content: thread.content,
+              imageUrl: thread.imageUrl,
+              imageName: thread.imageName,
+              createdAt: thread.createdAt,
+            });
+            return;
+          }
+          
+          // Check posts in this thread
           try {
             const response = await fetch(`/api/threads/${thread.id}`);
             if (response.ok) {
@@ -41,27 +80,18 @@ export default function PostPreview({ postId, x, y, onClose }: PostPreviewProps)
                 setPostData(post);
                 return;
               }
-              // Check if it's the OP
-              if (data.thread.id.toString() === postId) {
-                setPostData({
-                  id: data.thread.id,
-                  threadId: data.thread.id,
-                  content: data.thread.content,
-                  imageUrl: data.thread.imageUrl,
-                  imageName: data.thread.imageName,
-                  createdAt: data.thread.createdAt,
-                });
-                return;
-              }
             }
           } catch (error) {
             console.error('Error fetching thread:', error);
           }
         }
-      };
-      findPost();
-    }
-  }, [threads, postId]);
+      } catch (error) {
+        console.error('Error finding post:', error);
+      }
+    };
+    
+    findPost();
+  }, [postId]);
 
   const formatDate = (date: Date) => {
     return new Date(date).toLocaleDateString("en-US", {
@@ -123,7 +153,10 @@ export default function PostPreview({ postId, x, y, onClose }: PostPreviewProps)
         )}
         <div>
           <div className="mb-1">
-            <span className="font-bold theme-text-green">Anonymous</span>
+            <span className="font-bold theme-text-green">
+              {(postData as any).name || "Anonymous"}
+              {(postData as any).tripcode && <span className="theme-text-quote"> !{(postData as any).tripcode}</span>}
+            </span>
             <span className="text-gray-600 ml-2">{formatDate(postData.createdAt)}</span>
             <span className="text-blue-600 ml-2">No. {postData.id}</span>
           </div>

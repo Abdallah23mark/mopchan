@@ -57,7 +57,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create new thread
   app.post("/api/threads", upload.single('image'), async (req, res) => {
     try {
-      const { subject, content } = req.body;
+      const { subject, content, name, tripcode } = req.body;
       
       // Validate required fields
       if (!content || content.trim().length === 0) {
@@ -69,6 +69,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         content: content.trim(),
         imageUrl: req.file ? `/uploads/${req.file.filename}` : null,
         imageName: req.file ? req.file.originalname : null,
+        name: name || "Anonymous",
+        tripcode: tripcode || null,
       };
 
       const validatedData = insertThreadSchema.parse(threadData);
@@ -97,7 +99,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Thread not found" });
       }
 
-      const { content } = req.body;
+      const { content, name, tripcode } = req.body;
       
       if (!content || content.trim().length === 0) {
         return res.status(400).json({ message: "Content is required" });
@@ -108,6 +110,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         content: content.trim(),
         imageUrl: req.file ? `/uploads/${req.file.filename}` : null,
         imageName: req.file ? req.file.originalname : null,
+        name: name || "Anonymous",
+        tripcode: tripcode || null,
       };
 
       const validatedData = insertPostSchema.parse(postData);

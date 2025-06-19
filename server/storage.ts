@@ -144,6 +144,8 @@ export class MemStorage implements IStorage {
         createdAt: new Date(Date.now() - Math.random() * 86400000 * 7), // Random date within last week
         replyCount: threadData.replyCount,
         imageCount: threadData.imageCount,
+        name: "Anonymous",
+        tripcode: null,
       };
       this.threads.set(id, thread);
     });
@@ -170,6 +172,8 @@ export class MemStorage implements IStorage {
       createdAt: new Date(),
       replyCount: 0,
       imageCount: insertThread.imageUrl ? 1 : 0,
+      name: insertThread.name || "Anonymous",
+      tripcode: insertThread.tripcode || null,
     };
     this.threads.set(id, thread);
     return thread;
@@ -200,6 +204,8 @@ export class MemStorage implements IStorage {
       imageUrl: insertPost.imageUrl || null,
       imageName: insertPost.imageName || null,
       createdAt: new Date(),
+      name: insertPost.name || "Anonymous",
+      tripcode: insertPost.tripcode || null,
     };
     this.posts.set(id, post);
     
