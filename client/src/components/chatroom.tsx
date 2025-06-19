@@ -101,7 +101,7 @@ export default function Chatroom() {
       </button>
       
       {isExpanded && (
-        <div className="mt-4 theme-bg-post theme-border border p-4 max-w-2xl mx-auto">
+        <div className="mt-4 theme-bg-post theme-border border p-4 w-full max-w-4xl mx-auto">
           <div className="mb-2">
             <div className="font-bold text-sm theme-text-main mb-1">Mopchan Chatroom</div>
             <div className="text-xs text-gray-600">
@@ -121,13 +121,15 @@ export default function Chatroom() {
                 </div>
               )}
               {messages.map((msg) => (
-                <div key={msg.id} className="flex flex-wrap gap-2">
-                  <span className="font-bold theme-text-green">
-                    {msg.username}
-                    {msg.tripcode && <span className="theme-text-quote"> !{msg.tripcode}</span>}
-                  </span>
-                  <span className="text-gray-600">{formatTime(msg.timestamp)}</span>
-                  <div className="w-full">
+                <div key={msg.id} className="flex flex-col gap-1 text-left">
+                  <div className="flex gap-2 items-baseline">
+                    <span className="font-bold theme-text-green">
+                      {msg.username}
+                      {msg.tripcode && <span className="theme-text-quote"> !{msg.tripcode}</span>}
+                    </span>
+                    <span className="text-gray-600 text-xs">{formatTime(msg.timestamp)}</span>
+                  </div>
+                  <div className="ml-2">
                     {formatMessage(msg.message)}
                   </div>
                 </div>
