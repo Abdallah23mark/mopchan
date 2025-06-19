@@ -43,129 +43,88 @@ export default function ThreadCard({ thread }: ThreadCardProps) {
       });
     }
   });
-  const formatContent = (content: string) => {
-    // Truncate content for card display but preserve greentext formatting
-    const truncated = content.length > 100 ? content.substring(0, 100) + "..." : content;
-    return truncated.split('\n').map((line, index) => {
-      if (line.startsWith('>')) {
-        if (line.match(/^>>(No\. )?\d+$/)) {
-          // Post quote - red maroon color
-          return (
-            <div key={index} className="theme-text-quote">
-              {line}
-            </div>
-          );
-        } else {
-          // Greentext - green color
-          return (
-            <div key={index} className="text-green-700">
-              {line}
-            </div>
-          );
-        }
-      }
-      return <div key={index}>{line || "\u00A0"}</div>;
-    });
-  };
-
   const formatDate = (date: Date) => {
-    const now = new Date();
-    const threadDate = new Date(date);
-    const diffInMinutes = Math.floor((now.getTime() - threadDate.getTime()) / (1000 * 60));
-    
-    if (diffInMinutes < 1) {
-      return "Just now";
-    } else if (diffInMinutes < 60) {
-      return `${diffInMinutes} minute${diffInMinutes !== 1 ? 's' : ''} ago`;
-    } else if (diffInMinutes < 1440) {
-      const hours = Math.floor(diffInMinutes / 60);
-      return `${hours} hour${hours !== 1 ? 's' : ''} ago`;
-    } else {
-      const days = Math.floor(diffInMinutes / 1440);
-      return `${days} day${days !== 1 ? 's' : ''} ago`;
-    }
+    return new Date(date).toLocaleDateString("en-US", {
+      month: "2-digit",
+      day: "2-digit",
+      year: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
   };
 
   return (
     <Link href={`/thread/${thread.id}`}>
-      <div className="theme-bg-post theme-border border cursor-pointer hover:opacity-90 transition-colors relative" style={{ minHeight: '150px' }}>
+      <div className="theme-thread-card p-4 border border-gray-300 hover:border-gray-400 transition-colors relative">
         {/* Pin icon indicator */}
         {thread.isPinned && (
-          <div className="absolute top-2 right-2 z-10">
+          <div className="absolute top-2 right-2">
             <Pin className="w-4 h-4 text-red-600 fill-current" />
           </div>
         )}
-        
-        {thread.imageUrl && (
-          <div className="relative">
-            <img
-              src={thread.imageUrl}
-              alt={thread.imageName || "Thread image"}
-              className="w-full object-contain cursor-pointer hover:opacity-80"
-              style={{ maxHeight: '200px' }}
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                window.open(thread.imageUrl!, '_blank');
-              }}
-            />
-          </div>
-        )}
-        <div className="p-2 text-xs leading-tight">
-          <div className="text-right text-gray-600 mb-1 text-xs">
-            {formatDate(thread.createdAt)}
-          </div>
-          <div className="text-xs text-gray-600 mb-1">
-            <span className={`font-bold ${(thread as any).isAdminPost ? 'text-red-600 admin-name' : 'text-green-600'}`}>
-              {(thread as any).name || "Anonymous"}
-              {(thread as any).tripcode && (
-                <span className={`${(thread as any).isAdminPost ? 'text-red-600' : 'text-blue-600'}`}>
-                  {' '}!{(thread as any).tripcode}
-                </span>
-              )}
-            </span>
-          </div>
-          {thread.subject && (
-            <div className={`font-bold mb-1 break-words ${(thread as any).isAdminPost ? 'text-red-600 admin-subject' : 'text-black'}`}>
-              {thread.subject}
+        <div className="flex items-start gap-3">
+          {thread.imageUrl && (
+            <div className="flex-shrink-0">
+              <img
+                src={thread.imageUrl}
+                alt={thread.imageName || "Thread image"}
+                className="w-16 h-16 object-cover border border-gray-300"
+              />
             </div>
           )}
-          <div 
-            className={`mb-2 break-words leading-relaxed ${(thread as any).isAdminPost ? 'text-red-600 font-medium' : 'text-black'}`}
-          >
-            {String(thread.content || '')}
-          </div>
-          <div className="flex justify-between items-center">
-            <div className="text-gray-600 text-xs">
-              R: {thread.replyCount} / I: {thread.imageUrl ? thread.imageCount + 1 : thread.imageCount}
+          
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-1">
+              {thread.subject && (
+                <h3 className="font-bold text-sm theme-text-subject truncate">
+                  {thread.subject}
+                </h3>
+              )}
+              <span className="text-xs theme-text-name">
+                {thread.name || "Anonymous"}
+              </span>
+              <span className="text-xs theme-text-date">
+                {formatDate(thread.createdAt)}
+              </span>
             </div>
             
-            {/* Admin pin/unpin button */}
-            {!adminLoading && isAdmin && (
-              <Button
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  pinMutation.mutate();
-                }}
-                variant="outline"
-                size="sm"
-                disabled={pinMutation.isPending}
-                className="h-5 px-1 text-xs"
-              >
-                {thread.isPinned ? (
-                  <>
-                    <PinOff className="w-3 h-3 mr-1" />
-                    Unpin
-                  </>
-                ) : (
-                  <>
-                    <Pin className="w-3 h-3 mr-1" />
-                    Pin
-                  </>
-                )}
-              </Button>
-            )}
+            <div className="text-sm theme-text-content mb-2">
+              <div>{thread.content.length > 150 ? thread.content.substring(0, 150) + "..." : thread.content}</div>
+            </div>
+            
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4 text-xs theme-text-meta">
+                <span>R: {thread.replyCount}</span>
+                <span>I: {thread.imageCount}</span>
+              </div>
+              
+              {/* Admin pin/unpin button */}
+              {!adminLoading && isAdmin && (
+                <Button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    pinMutation.mutate();
+                  }}
+                  variant="outline"
+                  size="sm"
+                  disabled={pinMutation.isPending}
+                  className="h-6 px-2 text-xs"
+                >
+                  {thread.isPinned ? (
+                    <>
+                      <PinOff className="w-3 h-3 mr-1" />
+                      Unpin
+                    </>
+                  ) : (
+                    <>
+                      <Pin className="w-3 h-3 mr-1" />
+                      Pin
+                    </>
+                  )}
+                </Button>
+              )}
+            </div>
           </div>
         </div>
       </div>
