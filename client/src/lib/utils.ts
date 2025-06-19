@@ -20,18 +20,12 @@ export function formatDate(date: Date | string): string {
 }
 
 export function formatContent(content: string | any, isAdminPost?: boolean): string {
-  // Simple fallback approach - if content is not a string, just return the string representation
-  if (typeof content !== 'string') {
-    if (content === null || content === undefined) {
-      return "";
-    }
-    // Force convert to string and handle any weird cases
-    content = String(content);
-  }
+  // Ensure we have a valid string
+  const textContent = String(content || '');
   
-  if (!content) return "";
+  if (!textContent) return "";
   
-  let formatted = content
+  let formatted = textContent
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/\n/g, '<br>');

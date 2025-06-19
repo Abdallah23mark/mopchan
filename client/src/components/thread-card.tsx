@@ -88,7 +88,9 @@ export default function ThreadCard({ thread }: ThreadCardProps) {
           )}
           <div 
             className={`mb-2 break-words leading-relaxed ${(thread as any).isAdminPost ? 'text-red-600 font-medium' : 'text-black'}`}
-            dangerouslySetInnerHTML={{ __html: formatContent(thread.content, (thread as any).isAdminPost) }}
+            dangerouslySetInnerHTML={{ 
+              __html: formatContent(String(thread.content || ''), (thread as any).isAdminPost) 
+            }}
           />
           <div className="text-gray-600 text-xs">
             R: {thread.replyCount} / I: {thread.imageUrl ? thread.imageCount + 1 : thread.imageCount}
