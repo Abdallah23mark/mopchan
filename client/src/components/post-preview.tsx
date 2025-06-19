@@ -23,28 +23,35 @@ export default function PostPreview({ postId, x, y, onClose }: PostPreviewProps)
   }, [postId]);
 
   useEffect(() => {
+    // Clean postId to remove any invalid characters
+    const cleanPostId = postId.replace(/[\r\n\t]/g, '').trim();
+    
     // First check if the post is already visible on the current page
-    const postElement = document.querySelector(`[data-post-id="${postId}"]`);
-    if (postElement) {
-      // Try to extract data from the current page
-      const contentElement = postElement.querySelector('.text-xs.leading-relaxed');
-      const timeElement = postElement.querySelector('.text-gray-600');
-      const imageElement = postElement.querySelector('img');
-      const nameElement = postElement.querySelector('.theme-text-green');
-      
-      if (contentElement && timeElement) {
-        setPostData({
-          id: parseInt(postId),
-          threadId: 0, // We don't need this for preview
-          content: contentElement.textContent || '',
-          imageUrl: imageElement?.getAttribute('src') || null,
-          imageName: imageElement?.getAttribute('alt') || null,
-          createdAt: new Date(), // Use current time for simplicity
-          name: nameElement?.textContent?.split('!')[0] || "Anonymous",
-          tripcode: nameElement?.textContent?.includes('!') ? nameElement.textContent.split('!')[1] : null,
-        });
-        return;
+    try {
+      const postElement = document.querySelector(`[data-post-id="${cleanPostId}"]`);
+      if (postElement) {
+        // Try to extract data from the current page
+        const contentElement = postElement.querySelector('.text-xs.leading-relaxed');
+        const timeElement = postElement.querySelector('.text-gray-600');
+        const imageElement = postElement.querySelector('img');
+        const nameElement = postElement.querySelector('.theme-text-green');
+        
+        if (contentElement && timeElement) {
+          setPostData({
+            id: parseInt(cleanPostId),
+            threadId: 0, // We don't need this for preview
+            content: contentElement.textContent || '',
+            imageUrl: imageElement?.getAttribute('src') || null,
+            imageName: imageElement?.getAttribute('alt') || null,
+            createdAt: new Date(), // Use current time for simplicity
+            name: nameElement?.textContent?.split('!')[0] || "Anonymous",
+            tripcode: nameElement?.textContent?.includes('!') ? nameElement.textContent.split('!')[1] : null,
+          });
+          return;
+        }
       }
+    } catch (error) {
+      console.error('Error querying DOM for post preview:', error);
     }
 
     // If not found on current page, search through API
@@ -58,7 +65,7 @@ export default function PostPreview({ postId, x, y, onClose }: PostPreviewProps)
         
         for (const thread of threads) {
           // Check if it's the OP
-          if (thread.id.toString() === postId) {
+          if (thread.id.toString() === cleanPostId) {
             setPostData({
               id: thread.id,
               threadId: thread.id,
@@ -77,7 +84,7 @@ export default function PostPreview({ postId, x, y, onClose }: PostPreviewProps)
             const response = await fetch(`/api/threads/${thread.id}`);
             if (response.ok) {
               const data = await response.json();
-              const post = data.posts.find((p: Post) => p.id.toString() === postId);
+              const post = data.posts.find((p: Post) => p.id.toString() === cleanPostId);
               if (post) {
                 setPostData(post);
                 return;

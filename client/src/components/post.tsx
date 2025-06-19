@@ -74,9 +74,11 @@ export default function PostComponent({ post, isOP = false, subject, onQuote, on
   };
 
   const showPostPreview = (e: React.MouseEvent, postNumber: string) => {
+    // Clean the post number to remove any invalid characters
+    const cleanPostNumber = postNumber.replace(/[\r\n\t]/g, '').trim();
     const rect = (e.target as HTMLElement).getBoundingClientRect();
     setHoverPreview({
-      postId: postNumber,
+      postId: cleanPostNumber,
       x: rect.right + 10,
       y: rect.top
     });
