@@ -17,45 +17,48 @@ function formatContentForDisplay(content: any, isAdminPost?: boolean) {
   const lines = textContent.split('\n');
   
   return lines.map((line, index) => {
-    // Handle greentext (lines starting with >)
-    if (line.startsWith('>') && !isAdminPost) {
-      // Check if it's a quote link (>>number)
-      if (line.match(/^>>(\d+)/)) {
-        const postId = line.match(/^>>(\d+)/)?.[1];
-        return (
-          <span key={index} className="text-blue-600 hover:text-blue-800 cursor-pointer underline">
-            {line}
-            {index < lines.length - 1 && <br />}
-          </span>
-        );
-      } else {
-        // Regular greentext
-        return (
-          <span key={index} className="text-green-600 font-bold">
-            {line}
-            {index < lines.length - 1 && <br />}
-          </span>
-        );
-      }
-    } else {
-      // Handle quote links in regular text
-      const parts = line.split(/(>>(\d+))/g);
-      return (
-        <span key={index}>
-          {parts.map((part, partIndex) => {
-            if (part.match(/^>>(\d+)$/)) {
-              return (
-                <span key={partIndex} className="text-blue-600 hover:text-blue-800 cursor-pointer underline">
-                  {part}
-                </span>
-              );
-            }
-            return part;
-          })}
-          {index < lines.length - 1 && <br />}
-        </span>
-      );
-    }
+    // Process line for quote links first, then apply greentext styling
+    const processLineWithQuotes = (text: string, lineIndex: number, isGreentext: boolean = false) => {
+      // Split by quote pattern but keep the quotes
+      const parts = text.split(/(>>(\d+))/g);
+      
+      return parts.map((part, partIndex) => {
+        if (part.match(/^>>(\d+)$/)) {
+          // Quote link found
+          return (
+            <span 
+              key={`${lineIndex}-${partIndex}`} 
+              className="text-blue-600 hover:text-blue-800 cursor-pointer underline"
+            >
+              {part}
+            </span>
+          );
+        } else if (part === '') {
+          // Empty string from split, ignore
+          return null;
+        } else {
+          // Regular text - apply greentext styling if needed
+          return (
+            <span 
+              key={`${lineIndex}-${partIndex}`}
+              className={isGreentext && !isAdminPost ? 'text-green-600 font-bold' : ''}
+            >
+              {part}
+            </span>
+          );
+        }
+      }).filter(Boolean);
+    };
+
+    // Check if line is greentext (starts with > but not >>)
+    const isGreentext = line.startsWith('>') && !line.startsWith('>>');
+    
+    return (
+      <span key={index}>
+        {processLineWithQuotes(line, index, isGreentext)}
+        {index < lines.length - 1 && <br />}
+      </span>
+    );
   });
 }
 
