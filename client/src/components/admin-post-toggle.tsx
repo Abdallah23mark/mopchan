@@ -31,7 +31,7 @@ export default function AdminPostToggle({ onToggle, defaultValue = false }: Admi
   }, [isAdminPost, onToggle]);
 
   // Don't show toggle if not admin
-  if (!adminUser || !adminUser.user) {
+  if (!adminUser?.user?.isAdmin) {
     return null;
   }
 

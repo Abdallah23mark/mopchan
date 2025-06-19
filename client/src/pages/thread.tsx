@@ -134,7 +134,7 @@ export default function ThreadPage() {
           <h2 className="text-lg font-bold theme-text-quote mb-2">
             Thread #{thread.id}
           </h2>
-          {adminUser?.user && (
+          {adminUser?.user?.isAdmin && (
             <Button
               onClick={handleDeleteThread}
               variant="outline"

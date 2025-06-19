@@ -57,7 +57,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create new thread
   app.post("/api/threads", upload.single('image'), async (req, res) => {
     try {
-      const { subject, content, name, tripcode } = req.body;
+      const { subject, content, name, tripcode, isAdminPost } = req.body;
       
       // Validate required fields
       if (!content || content.trim().length === 0) {
@@ -71,6 +71,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         imageName: req.file ? req.file.originalname : null,
         name: name || "Anonymous",
         tripcode: tripcode || null,
+        isAdminPost: isAdminPost === "true",
       };
 
       const validatedData = insertThreadSchema.parse(threadData);

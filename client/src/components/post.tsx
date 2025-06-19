@@ -165,7 +165,7 @@ export default function PostComponent({ post, isOP = false, subject, onQuote, on
           >
             [Quote]
           </Button>
-          {adminUser?.user && (
+          {adminUser?.user?.isAdmin && (
             <Button
               onClick={() => onDelete()}
               variant="outline"
