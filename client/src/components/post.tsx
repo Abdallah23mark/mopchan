@@ -137,6 +137,10 @@ export default function PostComponent({ post, isOP = false, subject, onQuote, on
     });
   };
 
+  // Set the global functions
+  showPostPreviewGlobal = showPostPreview;
+  hidePostPreviewGlobal = hidePostPreview;
+
   return (
     <div 
       id={`post-${post.id}`}
