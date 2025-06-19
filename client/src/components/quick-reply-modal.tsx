@@ -94,7 +94,7 @@ export default function QuickReplyModal({ threadId, trigger }: QuickReplyModalPr
       <DialogTrigger asChild>
         {trigger}
       </DialogTrigger>
-      <DialogContent className="max-w-lg relative" style={{ backgroundColor: '#E0E8FF' }}>
+      <DialogContent className="max-w-2xl" style={{ backgroundColor: '#E0E8FF' }}>
         <AdminPostToggle 
           onToggle={setIsAdminPost}
           defaultValue={isAdminPost}

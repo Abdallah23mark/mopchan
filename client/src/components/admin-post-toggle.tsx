@@ -36,7 +36,7 @@ export default function AdminPostToggle({ onToggle, defaultValue = false }: Admi
   }
 
   return (
-    <div className="absolute top-2 right-12 z-10">
+    <div className="absolute top-4 right-14 z-10">
       <button
         type="button"
         onClick={() => setIsAdminPost(!isAdminPost)}

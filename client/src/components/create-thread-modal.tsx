@@ -91,7 +91,7 @@ export default function CreateThreadModal({ trigger }: CreateThreadModalProps) {
       <DialogTrigger asChild>
         {trigger}
       </DialogTrigger>
-      <DialogContent className="max-w-2xl relative" style={{ backgroundColor: '#E0E8FF' }}>
+      <DialogContent className="max-w-2xl" style={{ backgroundColor: '#E0E8FF' }}>
         <AdminPostToggle 
           onToggle={setIsAdminPost}
           defaultValue={isAdminPost}
