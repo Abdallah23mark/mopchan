@@ -1,4 +1,10 @@
 import { Link } from "wouter";
+import { useAdmin } from "@/hooks/useAdmin";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
+import { Button } from "@/components/ui/button";
+import { Pin, PinOff } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 import type { Thread } from "@shared/schema";
 
 interface ThreadCardProps {
@@ -6,6 +12,37 @@ interface ThreadCardProps {
 }
 
 export default function ThreadCard({ thread }: ThreadCardProps) {
+  const { isAdmin, isLoading: adminLoading } = useAdmin();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  const pinMutation = useMutation({
+    mutationFn: async () => {
+      if (thread.isPinned) {
+        return apiRequest(`/api/admin/threads/${thread.id}/pin`, {
+          method: "DELETE"
+        });
+      } else {
+        return apiRequest(`/api/admin/threads/${thread.id}/pin`, {
+          method: "POST"
+        });
+      }
+    },
+    onSuccess: () => {
+      toast({
+        title: thread.isPinned ? "Thread unpinned" : "Thread pinned",
+        description: thread.isPinned ? "Thread removed from pinned position" : "Thread pinned to top of catalog"
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/threads"] });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to update thread pin status",
+        variant: "destructive"
+      });
+    }
+  });
   const formatContent = (content: string) => {
     // Truncate content for card display but preserve greentext formatting
     const truncated = content.length > 100 ? content.substring(0, 100) + "..." : content;
@@ -51,7 +88,14 @@ export default function ThreadCard({ thread }: ThreadCardProps) {
 
   return (
     <Link href={`/thread/${thread.id}`}>
-      <div className="theme-bg-post theme-border border cursor-pointer hover:opacity-90 transition-colors" style={{ minHeight: '150px' }}>
+      <div className="theme-bg-post theme-border border cursor-pointer hover:opacity-90 transition-colors relative" style={{ minHeight: '150px' }}>
+        {/* Pin icon indicator */}
+        {thread.isPinned && (
+          <div className="absolute top-2 right-2 z-10">
+            <Pin className="w-4 h-4 text-red-600 fill-current" />
+          </div>
+        )}
+        
         {thread.imageUrl && (
           <div className="relative">
             <img
@@ -91,8 +135,37 @@ export default function ThreadCard({ thread }: ThreadCardProps) {
           >
             {String(thread.content || '')}
           </div>
-          <div className="text-gray-600 text-xs">
-            R: {thread.replyCount} / I: {thread.imageUrl ? thread.imageCount + 1 : thread.imageCount}
+          <div className="flex justify-between items-center">
+            <div className="text-gray-600 text-xs">
+              R: {thread.replyCount} / I: {thread.imageUrl ? thread.imageCount + 1 : thread.imageCount}
+            </div>
+            
+            {/* Admin pin/unpin button */}
+            {!adminLoading && isAdmin && (
+              <Button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  pinMutation.mutate();
+                }}
+                variant="outline"
+                size="sm"
+                disabled={pinMutation.isPending}
+                className="h-5 px-1 text-xs"
+              >
+                {thread.isPinned ? (
+                  <>
+                    <PinOff className="w-3 h-3 mr-1" />
+                    Unpin
+                  </>
+                ) : (
+                  <>
+                    <Pin className="w-3 h-3 mr-1" />
+                    Pin
+                  </>
+                )}
+              </Button>
+            )}
           </div>
         </div>
       </div>
