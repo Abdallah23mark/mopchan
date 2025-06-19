@@ -49,7 +49,8 @@ export class DatabaseStorage implements IStorage {
   private JWT_SECRET = process.env.JWT_SECRET || "mopchan-secret-key";
 
   async getAllThreads(): Promise<Thread[]> {
-    const result = await db.select().from(threads).orderBy(desc(threads.bumpedAt));
+    const result = await db.select().from(threads)
+      .orderBy(desc(threads.isPinned), desc(threads.bumpedAt));
     return result;
   }
 

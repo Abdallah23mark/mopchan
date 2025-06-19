@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import type { Thread } from "@shared/schema";
-import ThreadCard from "@/components/thread-card";
+import ThreadCard from "@/components/thread-card-new";
 
 interface CatalogProps {
   searchTerm?: string;
