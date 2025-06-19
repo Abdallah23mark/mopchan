@@ -1,7 +1,5 @@
 import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
 
 interface AdminPostToggleProps {
   onToggle: (isAdminPost: boolean) => void;
@@ -38,22 +36,18 @@ export default function AdminPostToggle({ onToggle, defaultValue = false }: Admi
   }
 
   return (
-    <div className="flex items-center gap-2 text-xs">
-      <Button
+    <div className="absolute top-2 right-12 z-10">
+      <button
         type="button"
-        size="sm"
-        variant={isAdminPost ? "default" : "outline"}
         onClick={() => setIsAdminPost(!isAdminPost)}
-        className={isAdminPost ? "bg-red-600 hover:bg-red-700 text-white" : ""}
-        data-admin-post={isAdminPost ? "true" : "false"}
+        className={`px-3 py-1 text-xs font-medium rounded border transition-colors ${
+          isAdminPost 
+            ? "bg-red-600 text-white border-red-600 hover:bg-red-700" 
+            : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+        }`}
       >
         {isAdminPost ? "Admin Post ON" : "Admin Post OFF"}
-      </Button>
-      {isAdminPost && (
-        <span className="text-red-600 text-xs">
-          (Posts with red text)
-        </span>
-      )}
+      </button>
     </div>
   );
 }

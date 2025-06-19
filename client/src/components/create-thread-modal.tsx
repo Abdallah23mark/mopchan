@@ -91,7 +91,11 @@ export default function CreateThreadModal({ trigger }: CreateThreadModalProps) {
       <DialogTrigger asChild>
         {trigger}
       </DialogTrigger>
-      <DialogContent className="max-w-2xl" style={{ backgroundColor: '#E0E8FF' }}>
+      <DialogContent className="max-w-2xl relative" style={{ backgroundColor: '#E0E8FF' }}>
+        <AdminPostToggle 
+          onToggle={setIsAdminPost}
+          defaultValue={isAdminPost}
+        />
         <DialogHeader>
           <DialogTitle className="text-red-800 font-bold">Start a New Thread</DialogTitle>
         </DialogHeader>
@@ -150,11 +154,6 @@ Use >>No. 123 to quote posts"
               Max file size: 3MB. Supported formats: JPG, PNG, GIF, WEBP
             </div>
           </div>
-
-          <AdminPostToggle 
-            onToggle={setIsAdminPost}
-            defaultValue={isAdminPost}
-          />
 
           <div className="flex justify-between items-center">
             <Button

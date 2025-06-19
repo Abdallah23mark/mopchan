@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { useToast } from "@/hooks/use-toast";
 import FileInputButton from "./file-input-button";
 import { parseNameField } from "@/utils/tripcode";
+import AdminPostToggle from "./admin-post-toggle";
 
 interface QuickReplyModalProps {
   threadId: number;
@@ -22,6 +23,7 @@ export default function QuickReplyModal({ threadId, trigger }: QuickReplyModalPr
   const [content, setContent] = useState("");
   const [image, setImage] = useState<File | null>(null);
   const [name, setName] = useState("");
+  const [isAdminPost, setIsAdminPost] = useState(false);
 
   // Check for pending quotes when modal opens
   useEffect(() => {
@@ -55,6 +57,7 @@ export default function QuickReplyModal({ threadId, trigger }: QuickReplyModalPr
       setContent("");
       setImage(null);
       setName("");
+      setIsAdminPost(false);
       setOpen(false);
     },
     onError: (error) => {
@@ -81,6 +84,7 @@ export default function QuickReplyModal({ threadId, trigger }: QuickReplyModalPr
     const { name: parsedName, tripcode } = parseNameField(name);
     formData.append("name", parsedName);
     if (tripcode) formData.append("tripcode", tripcode);
+    if (isAdminPost) formData.append("isAdminPost", "true");
 
     createPostMutation.mutate(formData);
   };
@@ -90,7 +94,11 @@ export default function QuickReplyModal({ threadId, trigger }: QuickReplyModalPr
       <DialogTrigger asChild>
         {trigger}
       </DialogTrigger>
-      <DialogContent className="max-w-2xl" style={{ backgroundColor: '#E0E8FF' }}>
+      <DialogContent className="max-w-2xl relative" style={{ backgroundColor: '#E0E8FF' }}>
+        <AdminPostToggle 
+          onToggle={setIsAdminPost}
+          defaultValue={isAdminPost}
+        />
         <DialogHeader>
           <DialogTitle className="text-red-800 font-bold">Quick Reply</DialogTitle>
         </DialogHeader>

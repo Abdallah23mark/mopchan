@@ -83,7 +83,11 @@ export default function QuickReply({ threadId }: QuickReplyProps) {
   };
 
   return (
-    <div className="mt-6 bg-blue-50 border border-gray-400 p-4">
+    <div className="mt-6 bg-blue-50 border border-gray-400 p-4 relative">
+      <AdminPostToggle 
+        onToggle={setIsAdminPost}
+        defaultValue={isAdminPost}
+      />
       <h3 className="font-bold text-sm mb-3">Quick Reply</h3>
       <form onSubmit={handleSubmit} className="space-y-3">
         <div>
@@ -123,11 +127,6 @@ Use >>No. 123 to quote posts"
             Max file size: 3MB. Supported formats: JPG, PNG, GIF, WEBP
           </div>
         </div>
-
-        <AdminPostToggle 
-          onToggle={setIsAdminPost}
-          defaultValue={isAdminPost}
-        />
 
         <div className="flex justify-between items-center">
           <Button
