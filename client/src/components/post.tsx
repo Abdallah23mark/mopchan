@@ -80,8 +80,10 @@ export default function PostComponent({ post, isOP = false, subject, onQuote, on
     setHoverPreview(null);
   };
 
+  const [expandedImage, setExpandedImage] = useState<string | null>(null);
+
   const expandImage = (imageUrl: string) => {
-    window.open(imageUrl, '_blank');
+    setExpandedImage(imageUrl);
   };
 
   return (
@@ -146,6 +148,19 @@ export default function PostComponent({ post, isOP = false, subject, onQuote, on
           y={hoverPreview.y}
           onClose={hidePostPreview}
         />
+      )}
+      
+      {expandedImage && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 cursor-pointer"
+          onClick={() => setExpandedImage(null)}
+        >
+          <img
+            src={expandedImage}
+            alt="Expanded image"
+            className="max-w-full max-h-full object-contain"
+          />
+        </div>
       )}
     </div>
   );
