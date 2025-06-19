@@ -45,16 +45,27 @@ function App() {
           {/* Top Navigation Bar */}
           <div className="theme-bg-nav border-b theme-border px-4 py-1">
             <div className="flex justify-between items-center text-xs">
-              <div className="flex gap-4">
-                <span className="bg-gray-300 px-2 py-1">[archive]</span>
-                <span className="bg-gray-300 px-2 py-1">[bottom]</span>
-                <span className="bg-gray-300 px-2 py-1">[5 minutes ago]</span>
-                <span className="bg-gray-400 px-2 py-1 text-white">search</span>
+              <div className="flex gap-4 items-center">
+                <input
+                  type="text"
+                  placeholder="Search threads..."
+                  className="bg-white border px-2 py-1 text-xs"
+                  style={{ minWidth: '120px' }}
+                />
+                <select className="bg-white border px-2 py-1 text-xs">
+                  <option value="bump">Bump Order</option>
+                  <option value="reply">Reply Count</option>
+                  <option value="time">Time Posted</option>
+                </select>
               </div>
               <div className="font-bold">catalog</div>
-              <div className="flex gap-2">
-                <span className="bg-gray-300 px-2 py-1">new to old</span>
-                <span className="bg-gray-300 px-2 py-1">catalog</span>
+              <div className="flex gap-2 items-center">
+                <button 
+                  onClick={() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })}
+                  className="bg-gray-300 hover:bg-gray-400 px-2 py-1 cursor-pointer"
+                >
+                  [bottom]
+                </button>
               </div>
             </div>
           </div>

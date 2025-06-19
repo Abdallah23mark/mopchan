@@ -2,33 +2,14 @@ import { useQuery } from "@tanstack/react-query";
 import type { Thread } from "@shared/schema";
 import ThreadCard from "@/components/thread-card";
 
-interface CatalogProps {
-  searchTerm?: string;
-  sortBy?: "bump" | "reply" | "time";
-}
-
-export default function Catalog({ searchTerm = "", sortBy = "bump" }: CatalogProps) {
+export default function Catalog() {
   const { data: threads = [], isLoading } = useQuery({
     queryKey: ["/api/threads"],
     refetchInterval: 15000,
   });
 
-  const filteredThreads = threads.filter(thread => 
-    thread.subject?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    thread.content.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  const sortedThreads = [...filteredThreads].sort((a, b) => {
-    switch (sortBy) {
-      case "bump":
-        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-      case "reply":
-        return b.replyCount - a.replyCount;
-      case "time":
-        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-      default:
-        return 0;
-    }
+  const sortedThreads = [...threads].sort((a, b) => {
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
   });
 
   if (isLoading) {
