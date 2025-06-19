@@ -23,11 +23,29 @@ function App() {
   const [adminUser, setAdminUser] = useState<User | null>(null);
   const [adminToken, setAdminToken] = useState<string | null>(null);
 
-  // Clear any admin state on app load
+  // Check for existing admin session on load
   useEffect(() => {
-    localStorage.removeItem("adminToken");
-    setAdminUser(null);
-    setAdminToken(null);
+    const token = localStorage.getItem("adminToken");
+    if (token) {
+      fetch("/api/admin/verify", {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      })
+      .then(response => {
+        if (response.ok) {
+          return response.json();
+        }
+        throw new Error("Invalid token");
+      })
+      .then(data => {
+        setAdminUser(data.user);
+        setAdminToken(token);
+      })
+      .catch(() => {
+        localStorage.removeItem("adminToken");
+      });
+    }
   }, []);
 
   const handleAdminLogin = (user: User, token: string) => {
