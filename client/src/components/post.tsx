@@ -30,8 +30,14 @@ function formatContentForDisplay(content: any, isAdminPost?: boolean) {
             <span 
               key={`${lineIndex}-${partIndex}`} 
               className="text-blue-600 hover:text-blue-800 cursor-pointer underline"
-              onMouseEnter={(e) => showPostPreview(postId!, e.clientX, e.clientY)}
-              onMouseLeave={hidePostPreview}
+              onMouseEnter={(e) => {
+                // Quote link hover functionality
+                console.log('Hovering over post', postId);
+              }}
+              onMouseLeave={() => {
+                // Hide preview
+                console.log('Stop hovering');
+              }}
             >
               &gt;&gt;No. {postId}
             </span>
@@ -76,13 +82,14 @@ interface PostProps {
 export default function PostComponent({ post, isOP = false, subject, onQuote, onDelete }: PostProps) {
   const [hoverPreview, setHoverPreview] = useState<{ postId: string; x: number; y: number } | null>(null);
   const [showBanModal, setShowBanModal] = useState(false);
+  const [expandedImage, setExpandedImage] = useState<string | null>(null);
 
   const { isAdmin, isLoading: adminLoading, token: adminToken } = useAdmin();
 
   const formatDate = (date: Date) => {
     return new Date(date).toLocaleDateString("en-US", {
       month: "2-digit",
-      day: "2-digit",
+      day: "2-digit", 
       year: "2-digit",
       weekday: "short",
       hour: "2-digit",
@@ -91,81 +98,6 @@ export default function PostComponent({ post, isOP = false, subject, onQuote, on
       hour12: false,
     });
   };
-
-  const formatContent = (content: string) => {
-    // Convert >quotes to greentext and >>post references to blue links
-    return content.split('\n').map((line, index) => {
-      if (line.startsWith('>')) {
-        // Check if it's a post reference (>>123456 or >>No. 123456)
-        if (line.match(/^>>(No\. )?\d+/)) {
-          // Post quote - blue link color with hover functionality
-          const postNumber = line.replace(/^>>(No\. )?/, '').split(' ')[0]; // Get just the number part
-          return (
-            <div key={index}>
-              <span 
-                className="text-blue-600 hover:text-blue-800 cursor-pointer underline"
-                onClick={() => scrollToPost(postNumber)}
-                onMouseEnter={(e) => showPostPreview(e, postNumber)}
-                onMouseLeave={hidePostPreview}
-                title={`Click to jump to post ${postNumber}`}
-              >
-                {line.match(/^>>(No\. )?\d+$/) ? line : line.replace(/^(>>(No\. )?\d+)/, '$1')}
-              </span>
-              {line.replace(/^>>(No\. )?\d+\s*/, '').trim() && (
-                <span className="ml-1">{line.replace(/^>>(No\. )?\d+\s*/, '')}</span>
-              )}
-            </div>
-          );
-        } else {
-          // Regular greentext - green color
-          return (
-            <div key={index} className="theme-text-green">
-              {line}
-            </div>
-          );
-        }
-      }
-      return <div key={index}>{line || "\u00A0"}</div>; // Non-breaking space for empty lines
-    });
-  };
-
-  const scrollToPost = (postNumber: string) => {
-    const cleanPostNumber = postNumber.replace(/[\r\n\t]/g, '').trim();
-    const element = document.querySelector(`[data-post-id="${cleanPostNumber}"]`);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      element.classList.add('highlight-post');
-      setTimeout(() => element.classList.remove('highlight-post'), 2000);
-    }
-  };
-
-  const showPostPreview = (e: React.MouseEvent, postNumber: string) => {
-    // Clean the post number to remove any invalid characters
-    const cleanPostNumber = postNumber.replace(/[\r\n\t]/g, '').trim();
-    const rect = (e.target as HTMLElement).getBoundingClientRect();
-    
-    // Highlight the referenced post in red
-    const referencedPost = document.querySelector(`[data-post-id="${cleanPostNumber}"]`);
-    if (referencedPost) {
-      referencedPost.classList.add('quote-highlight');
-    }
-    
-    setHoverPreview({
-      postId: cleanPostNumber,
-      x: rect.right + 10,
-      y: rect.top
-    });
-  };
-
-  const hidePostPreview = () => {
-    // Remove highlight from any referenced posts
-    const highlightedPosts = document.querySelectorAll('.quote-highlight');
-    highlightedPosts.forEach(post => post.classList.remove('quote-highlight'));
-    
-    setHoverPreview(null);
-  };
-
-  const [expandedImage, setExpandedImage] = useState<string | null>(null);
 
   const expandImage = (imageUrl: string) => {
     setExpandedImage(imageUrl);
@@ -212,13 +144,13 @@ export default function PostComponent({ post, isOP = false, subject, onQuote, on
           >
             [Quote]
           </Button>
-          {!adminLoading && isAdmin && (
+          {isAdmin && !adminLoading && (
             <>
               <Button
-                onClick={() => onDelete()}
+                onClick={onDelete}
                 variant="outline"
                 size="sm"
-                className="ml-2 text-xs bg-red-200 px-1 hover:bg-red-300 h-auto py-0 text-red-600"
+                className="ml-1 text-xs bg-red-100 text-red-600 px-1 hover:bg-red-200 h-auto py-0"
               >
                 [Delete]
               </Button>
@@ -226,14 +158,14 @@ export default function PostComponent({ post, isOP = false, subject, onQuote, on
                 onClick={() => setShowBanModal(true)}
                 variant="outline"
                 size="sm"
-                className="ml-2 text-xs bg-orange-200 px-1 hover:bg-orange-300 h-auto py-0 text-orange-600"
+                className="ml-1 text-xs bg-orange-100 text-orange-600 px-1 hover:bg-orange-200 h-auto py-0"
               >
                 [Ban]
               </Button>
             </>
           )}
         </div>
-        {subject && isOP && (
+        {subject && (
           <div className={`font-bold text-sm mb-2 ${(post as any).isAdminPost ? 'text-red-600 admin-subject' : 'text-blue-600'}`}>
             {subject}
           </div>
@@ -250,7 +182,7 @@ export default function PostComponent({ post, isOP = false, subject, onQuote, on
           postId={hoverPreview.postId}
           x={hoverPreview.x}
           y={hoverPreview.y}
-          onClose={hidePostPreview}
+          onClose={() => setHoverPreview(null)}
         />
       )}
       
