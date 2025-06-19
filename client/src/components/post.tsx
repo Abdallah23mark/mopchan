@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { useAdmin } from "@/hooks/useAdmin";
 import PostPreview from "./post-preview";
-import BanModal from "./ban-modal";
 
 interface PostProps {
   post: Post;
@@ -16,7 +15,6 @@ interface PostProps {
 
 export default function PostComponent({ post, isOP = false, subject, onQuote, onDelete }: PostProps) {
   const [hoverPreview, setHoverPreview] = useState<{ postId: string; x: number; y: number } | null>(null);
-  const [banModalOpen, setBanModalOpen] = useState(false);
 
   const { isAdmin, isLoading: adminLoading } = useAdmin();
 
@@ -154,24 +152,14 @@ export default function PostComponent({ post, isOP = false, subject, onQuote, on
             [Quote]
           </Button>
           {!adminLoading && isAdmin && (
-            <>
-              <Button
-                onClick={() => onDelete()}
-                variant="outline"
-                size="sm"
-                className="ml-2 text-xs bg-red-200 px-1 hover:bg-red-300 h-auto py-0 text-red-600"
-              >
-                [Delete]
-              </Button>
-              <Button
-                onClick={() => setBanModalOpen(true)}
-                variant="outline"
-                size="sm"
-                className="ml-2 text-xs bg-orange-200 px-1 hover:bg-orange-300 h-auto py-0 text-orange-600"
-              >
-                [Ban]
-              </Button>
-            </>
+            <Button
+              onClick={() => onDelete()}
+              variant="outline"
+              size="sm"
+              className="ml-2 text-xs bg-red-200 px-1 hover:bg-red-300 h-auto py-0 text-red-600"
+            >
+              [Delete]
+            </Button>
           )}
         </div>
         {subject && isOP && (
@@ -207,20 +195,6 @@ export default function PostComponent({ post, isOP = false, subject, onQuote, on
           />
         </div>
       )}
-      {hoverPreview && (
-        <PostPreview
-          postId={hoverPreview.postId}
-          x={hoverPreview.x}
-          y={hoverPreview.y}
-          onClose={() => setHoverPreview(null)}
-        />
-      )}
-      
-      <BanModal
-        open={banModalOpen}
-        onClose={() => setBanModalOpen(false)}
-        post={post}
-      />
     </div>
   );
 }

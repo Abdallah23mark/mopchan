@@ -15,7 +15,6 @@ export const threads = pgTable("threads", {
   name: text("name").default("Anonymous"),
   tripcode: text("tripcode"),
   isAdminPost: boolean("is_admin_post").default(false).notNull(),
-  isPinned: boolean("is_pinned").default(false).notNull(),
   ipAddress: text("ip_address"),
 });
 
