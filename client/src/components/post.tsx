@@ -3,6 +3,7 @@ import type { Post } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import { useAdmin } from "@/hooks/useAdmin";
 import BanUserModal from "./ban-user-modal";
+import { useQuery } from "@tanstack/react-query";
 
 // Simple text formatting function that preserves functionality
 function formatContentForDisplay(content: any, isAdminPost?: boolean) {
@@ -28,12 +29,17 @@ function formatContentForDisplay(content: any, isAdminPost?: boolean) {
             <span 
               key={`${lineIndex}-${partIndex}`} 
               className="text-blue-600 hover:text-blue-800 cursor-pointer underline"
+              onMouseEnter={(e) => showPostPreview(postId!, e.clientX, e.clientY)}
+              onMouseLeave={hidePostPreview}
               onClick={() => {
                 const element = document.querySelector(`[data-post-id="${postId}"]`);
                 if (element) {
                   element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                  element.classList.add('bg-yellow-200');
-                  setTimeout(() => element.classList.remove('bg-yellow-200'), 2000);
+                  element.style.transition = 'background-color 0.3s ease';
+                  element.style.backgroundColor = '#fef3c7';
+                  setTimeout(() => {
+                    element.style.backgroundColor = '';
+                  }, 2000);
                 }
               }}
             >
@@ -80,6 +86,7 @@ interface PostProps {
 export default function PostComponent({ post, isOP = false, subject, onQuote, onDelete }: PostProps) {
   const [showBanModal, setShowBanModal] = useState(false);
   const [expandedImage, setExpandedImage] = useState<string | null>(null);
+  const [hoverPreview, setHoverPreview] = useState<{ postId: string; x: number; y: number; content: string; name: string; date: string } | null>(null);
 
   const { isAdmin, isLoading: adminLoading, token: adminToken } = useAdmin();
 
@@ -98,6 +105,36 @@ export default function PostComponent({ post, isOP = false, subject, onQuote, on
 
   const expandImage = (imageUrl: string) => {
     setExpandedImage(imageUrl);
+  };
+
+  const showPostPreview = (postId: string, x: number, y: number) => {
+    // Find post data from DOM safely
+    const postElement = document.querySelector(`[data-post-id="${postId}"]`);
+    if (postElement) {
+      const contentElement = postElement.querySelector('.post-content');
+      const nameElement = postElement.querySelector('.post-name');
+      const dateElement = postElement.querySelector('.post-date');
+      
+      setHoverPreview({
+        postId,
+        x: Math.min(x, window.innerWidth - 400),
+        y: Math.min(y, window.innerHeight - 300),
+        content: contentElement?.textContent || 'Post content not found',
+        name: nameElement?.textContent || 'Anonymous',
+        date: dateElement?.textContent || ''
+      });
+      
+      // Highlight referenced post
+      postElement.classList.add('bg-red-100', 'border-red-300');
+    }
+  };
+
+  const hidePostPreview = () => {
+    setHoverPreview(null);
+    // Remove highlighting
+    document.querySelectorAll('.bg-red-100').forEach(el => {
+      el.classList.remove('bg-red-100', 'border-red-300');
+    });
   };
 
   return (
@@ -168,13 +205,29 @@ export default function PostComponent({ post, isOP = false, subject, onQuote, on
           </div>
         )}
         <div 
-          className={`text-xs leading-relaxed whitespace-pre-wrap ${(post as any).isAdminPost ? 'text-red-600 font-bold' : ''}`}
+          className={`text-xs leading-relaxed whitespace-pre-wrap post-content ${(post as any).isAdminPost ? 'text-red-600 font-bold' : ''}`}
         >
           {formatContentForDisplay(post.content, (post as any).isAdminPost)}
         </div>
       </div>
       
-
+      {hoverPreview && (
+        <div
+          className="fixed bg-white border-2 border-red-500 p-3 shadow-lg z-50 max-w-md pointer-events-none"
+          style={{ left: hoverPreview.x, top: hoverPreview.y }}
+        >
+          <div className="text-xs text-gray-500 mb-1">
+            <span className="font-medium">{hoverPreview.name}</span>
+            <span className="ml-2">{hoverPreview.date}</span>
+            <span className="ml-2 text-blue-600">No. {hoverPreview.postId}</span>
+          </div>
+          <div className="text-xs leading-relaxed whitespace-pre-wrap">
+            {hoverPreview.content.length > 200 
+              ? hoverPreview.content.substring(0, 200) + '...' 
+              : hoverPreview.content}
+          </div>
+        </div>
+      )}
       
       {expandedImage && (
         <div 
