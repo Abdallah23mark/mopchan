@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Switch, Route } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -23,9 +23,18 @@ function App() {
   const [adminUser, setAdminUser] = useState<User | null>(null);
   const [adminToken, setAdminToken] = useState<string | null>(null);
 
+  // Clear any admin state on app load
+  useEffect(() => {
+    localStorage.removeItem("adminToken");
+    setAdminUser(null);
+    setAdminToken(null);
+  }, []);
+
   const handleAdminLogin = (user: User, token: string) => {
     setAdminUser(user);
     setAdminToken(token);
+    localStorage.setItem("adminToken", token);
+    setShowAdminLogin(false);
   };
 
   const handleAdminLogout = () => {
@@ -33,6 +42,7 @@ function App() {
     setAdminToken(null);
     localStorage.removeItem("adminToken");
     setShowAdminPanel(false);
+    setShowAdminLogin(false);
   };
 
   return (
