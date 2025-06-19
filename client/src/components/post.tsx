@@ -129,9 +129,13 @@ export default function PostComponent({ post, isOP = false, subject, onQuote, on
       )}
       <div className="flex-1">
         <div className="mb-2 text-xs">
-          <span className="font-bold theme-text-green">
+          <span className={`font-bold ${(post as any).isAdminPost ? 'text-red-600 admin-name' : 'theme-text-green'}`}>
             {(post as any).name || "Anonymous"}
-            {(post as any).tripcode && <span className="theme-text-quote"> !{(post as any).tripcode}</span>}
+            {(post as any).tripcode && (
+              <span className={`${(post as any).isAdminPost ? 'text-red-600' : 'theme-text-quote'}`}>
+                {' '}!{(post as any).tripcode}
+              </span>
+            )}
           </span>
           <span className="text-gray-600 ml-2">{formatDate(post.createdAt)}</span>
           <span className="text-blue-600 ml-2">No. {post.id}</span>
@@ -143,23 +147,19 @@ export default function PostComponent({ post, isOP = false, subject, onQuote, on
           >
             [Quote]
           </Button>
-          <Button
-            onClick={onDelete}
-            variant="outline"
-            size="sm"
-            className="ml-2 text-xs text-red-600 px-1 hover:bg-red-50 h-auto py-0"
-          >
-            [Delete]
-          </Button>
+          {/* Admin-only delete button will be added here */}
         </div>
         {subject && isOP && (
           <div className="font-bold text-sm mb-2 text-blue-600">
             {subject}
           </div>
         )}
-        <div className="text-xs leading-relaxed">
-          {formatContent(post.content)}
-        </div>
+        <div 
+          className="text-xs leading-relaxed"
+          dangerouslySetInnerHTML={{ 
+            __html: formatContent(post.content, (post as any).isAdminPost) 
+          }}
+        />
       </div>
       
       {hoverPreview && (

@@ -1,3 +1,3 @@
-admin:admin123:true
-moderator:mod123:false
-w0rtz:login:true
+admin:admin123
+moderator:mod123
+newadmin:password123

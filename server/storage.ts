@@ -375,6 +375,7 @@ export class MemStorage {
         name: "Anonymous",
         tripcode: null,
         isAdminPost: false,
+        ipAddress: null,
       };
       this.threads.set(id, thread);
     });
@@ -406,6 +407,7 @@ export class MemStorage {
       name: insertThread.name || "Anonymous",
       tripcode: insertThread.tripcode || null,
       isAdminPost: insertThread.isAdminPost || false,
+      ipAddress: ipAddress || null,
     };
     this.threads.set(id, thread);
     return thread;
@@ -439,6 +441,7 @@ export class MemStorage {
       name: insertPost.name || "Anonymous",
       tripcode: insertPost.tripcode || null,
       isAdminPost: insertPost.isAdminPost || false,
+      ipAddress: ipAddress || null,
     };
     this.posts.set(id, post);
     

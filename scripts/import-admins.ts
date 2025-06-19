@@ -11,11 +11,11 @@ if (args.length < 1) {
   console.log("Example: npx tsx scripts/import-admins.ts admins.txt");
   console.log("");
   console.log("File format (one admin per line):");
-  console.log("username:password:redText(true/false)");
+  console.log("username:password");
   console.log("Example file content:");
-  console.log("john:secret123:false");
-  console.log("jane:password456:true");
-  console.log("admin:admin123:true");
+  console.log("john:secret123");
+  console.log("jane:password456");
+  console.log("admin:admin123");
   process.exit(1);
 }
 
@@ -30,7 +30,7 @@ async function importAdmins() {
     let errors = 0;
     
     for (const line of lines) {
-      const [username, password, redTextStr] = line.split(':');
+      const [username, password] = line.split(':');
       
       if (!username || !password) {
         console.log(`Skipping invalid line: ${line}`);
@@ -38,17 +38,14 @@ async function importAdmins() {
         continue;
       }
       
-      const redText = redTextStr === "true";
-      
       try {
         const adminUser = await storage.createUser({
           username: username.trim(),
           password: password.trim(),
           isAdmin: true,
-          redText,
         });
         
-        console.log(`✓ Created admin: ${username} (ID: ${adminUser.id}, Red text: ${redText})`);
+        console.log(`✓ Created admin: ${username} (ID: ${adminUser.id})`);
         created++;
       } catch (error: any) {
         if (error.message?.includes("duplicate") || error.message?.includes("unique")) {

@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import FileInputButton from "./file-input-button";
+import AdminPostToggle from "./admin-post-toggle";
 import { parseNameField } from "@/utils/tripcode";
 
 interface CreateThreadModalProps {
@@ -22,6 +23,7 @@ export default function CreateThreadModal({ trigger }: CreateThreadModalProps) {
   const [content, setContent] = useState("");
   const [image, setImage] = useState<File | null>(null);
   const [name, setName] = useState("");
+  const [isAdminPost, setIsAdminPost] = useState(false);
 
   const createThreadMutation = useMutation({
     mutationFn: async (formData: FormData) => {
@@ -50,6 +52,7 @@ export default function CreateThreadModal({ trigger }: CreateThreadModalProps) {
       setContent("");
       setImage(null);
       setName("");
+      setIsAdminPost(false);
       // Navigate to the new thread
       window.location.href = `/thread/${thread.id}`;
     },
@@ -76,8 +79,9 @@ export default function CreateThreadModal({ trigger }: CreateThreadModalProps) {
     if (image) formData.append("image", image);
     
     const { name: parsedName, tripcode } = parseNameField(name);
-    formData.append("name", parsedName);
+    if (parsedName) formData.append("name", parsedName);
     if (tripcode) formData.append("tripcode", tripcode);
+    if (isAdminPost) formData.append("isAdminPost", "true");
 
     createThreadMutation.mutate(formData);
   };
@@ -147,6 +151,11 @@ Use >>No. 123 to quote posts"
             </div>
           </div>
 
+          <AdminPostToggle 
+            onToggle={setIsAdminPost}
+            defaultValue={isAdminPost}
+          />
+
           <div className="flex justify-between items-center">
             <Button
               type="submit"
@@ -156,7 +165,9 @@ Use >>No. 123 to quote posts"
               {createThreadMutation.isPending ? "Creating..." : "Create Thread"}
             </Button>
             <div className="text-xs text-gray-600">
-              Posting as: <span className="font-bold text-green-600">Anonymous</span>
+              Posting as: <span className="font-bold text-green-600">
+                {name.trim() ? parseNameField(name).name : "Anonymous"}
+              </span>
             </div>
           </div>
         </form>

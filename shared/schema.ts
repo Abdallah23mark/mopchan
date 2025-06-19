@@ -15,6 +15,7 @@ export const threads = pgTable("threads", {
   name: text("name").default("Anonymous"),
   tripcode: text("tripcode"),
   isAdminPost: boolean("is_admin_post").default(false).notNull(),
+  ipAddress: text("ip_address"),
 });
 
 export const posts = pgTable("posts", {
@@ -27,6 +28,7 @@ export const posts = pgTable("posts", {
   name: text("name").default("Anonymous"),
   tripcode: text("tripcode"),
   isAdminPost: boolean("is_admin_post").default(false).notNull(),
+  ipAddress: text("ip_address"),
 });
 
 // Admin users table
@@ -35,7 +37,6 @@ export const users = pgTable("users", {
   username: varchar("username", { length: 50 }).unique().notNull(),
   password: text("password").notNull(),
   isAdmin: boolean("is_admin").default(false).notNull(),
-  redText: boolean("red_text").default(false).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
