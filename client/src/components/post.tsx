@@ -182,7 +182,12 @@ export default function PostComponent({ post, isOP = false, subject, onQuote, on
         )}
         <div 
           className={`text-xs leading-relaxed ${(post as any).isAdminPost ? 'text-red-600 font-medium' : ''}`}
-          dangerouslySetInnerHTML={{ __html: formatContent(post.content, (post as any).isAdminPost) }}
+          dangerouslySetInnerHTML={{ 
+            __html: formatContent(
+              typeof post.content === 'string' ? post.content : JSON.stringify(post.content) || '', 
+              (post as any).isAdminPost
+            ) 
+          }}
         />
       </div>
       

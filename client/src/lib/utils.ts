@@ -19,24 +19,13 @@ export function formatDate(date: Date | string): string {
   });
 }
 
-export function formatContent(content: string | any, isAdminPost?: boolean): string {
-  // Convert to string and handle any object types
-  let textContent: string;
-  if (typeof content === 'string') {
-    textContent = content;
-  } else if (content && typeof content === 'object') {
-    // If it's an object, try to extract meaningful text
-    textContent = content.toString !== Object.prototype.toString ? content.toString() : JSON.stringify(content);
-  } else {
-    textContent = String(content || '');
-  }
-  
-  if (!textContent || textContent === 'null' || textContent === 'undefined') {
+export function formatContent(content: string, isAdminPost?: boolean): string {
+  if (!content || typeof content !== 'string') {
     return "";
   }
   
   // Escape HTML first
-  let formatted = textContent
+  let formatted = content
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
