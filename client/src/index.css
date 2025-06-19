@@ -1,0 +1,135 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: hsl(60, 100%, 98%);
+  --foreground: hsl(20, 14.3%, 4.1%);
+  --muted: hsl(60, 4.8%, 95.9%);
+  --muted-foreground: hsl(25, 5.3%, 44.7%);
+  --popover: hsl(0, 0%, 100%);
+  --popover-foreground: hsl(20, 14.3%, 4.1%);
+  --card: hsl(0, 0%, 100%);
+  --card-foreground: hsl(20, 14.3%, 4.1%);
+  --border: hsl(214, 32%, 91%);
+  --input: hsl(214, 32%, 91%);
+  --primary: hsl(221, 83%, 53%);
+  --primary-foreground: hsl(210, 40%, 98%);
+  --secondary: hsl(210, 40%, 95%);
+  --secondary-foreground: hsl(222, 84%, 5%);
+  --accent: hsl(210, 40%, 95%);
+  --accent-foreground: hsl(222, 84%, 5%);
+  --destructive: hsl(0, 84.2%, 60.2%);
+  --destructive-foreground: hsl(60, 9.1%, 97.8%);
+  --ring: hsl(20, 14.3%, 4.1%);
+  --radius: 0.5rem;
+  
+  /* 4chan specific colors */
+  --chan-bg: hsl(60, 100%, 98%);
+  --chan-border: hsl(214, 32%, 82%);
+  --chan-blue: hsl(240, 42%, 28%);
+  --chan-maroon: hsl(0, 100%, 25%);
+  --chan-light-blue: hsl(225, 55%, 92%);
+  --chan-green: hsl(82, 60%, 35%);
+  --chan-quote: hsl(15, 100%, 95%);
+}
+
+.dark {
+  --background: hsl(240, 10%, 3.9%);
+  --foreground: hsl(0, 0%, 98%);
+  --muted: hsl(240, 3.7%, 15.9%);
+  --muted-foreground: hsl(240, 5%, 64.9%);
+  --popover: hsl(240, 10%, 3.9%);
+  --popover-foreground: hsl(0, 0%, 98%);
+  --card: hsl(240, 10%, 3.9%);
+  --card-foreground: hsl(0, 0%, 98%);
+  --border: hsl(240, 3.7%, 15.9%);
+  --input: hsl(240, 3.7%, 15.9%);
+  --primary: hsl(221, 83%, 53%);
+  --primary-foreground: hsl(210, 40%, 98%);
+  --secondary: hsl(240, 3.7%, 15.9%);
+  --secondary-foreground: hsl(0, 0%, 98%);
+  --accent: hsl(240, 3.7%, 15.9%);
+  --accent-foreground: hsl(0, 0%, 98%);
+  --destructive: hsl(0, 62.8%, 30.6%);
+  --destructive-foreground: hsl(0, 0%, 98%);
+  --ring: hsl(240, 4.9%, 83.9%);
+  --radius: 0.5rem;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased;
+    background-color: var(--chan-bg);
+    color: var(--foreground);
+    font-family: Verdana, Arial, sans-serif;
+    font-size: 0.75rem;
+    line-height: 1.2;
+  }
+}
+
+@layer components {
+  .chan-bg {
+    background-color: var(--chan-bg);
+  }
+  
+  .chan-border {
+    border-color: var(--chan-border);
+  }
+  
+  .chan-blue {
+    color: var(--chan-blue);
+  }
+  
+  .chan-maroon {
+    color: var(--chan-maroon);
+  }
+  
+  .chan-light-blue {
+    background-color: var(--chan-light-blue);
+  }
+  
+  .chan-green {
+    color: var(--chan-green);
+  }
+  
+  .chan-quote {
+    background-color: var(--chan-quote);
+  }
+  
+  .chan-link {
+    @apply chan-blue underline;
+  }
+  
+  .chan-link:visited {
+    @apply chan-maroon;
+  }
+  
+  .chan-link:hover {
+    color: hsl(25, 100%, 50%);
+  }
+  
+  .greentext {
+    @apply chan-green;
+  }
+  
+  .post-quote {
+    @apply chan-maroon;
+  }
+  
+  .thread-hover:hover {
+    background-color: hsl(0, 0%, 94%);
+  }
+  
+  .image-thumb {
+    @apply cursor-pointer transition-opacity;
+  }
+  
+  .image-thumb:hover {
+    opacity: 0.8;
+  }
+}
