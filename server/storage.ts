@@ -28,6 +28,125 @@ export class MemStorage implements IStorage {
     this.posts = new Map();
     this.currentThreadId = 156789012; // Start with a realistic-looking number
     this.currentPostId = 156789012;
+    
+    // Add sample threads for visual preview
+    this.initializeSampleData();
+  }
+  
+  private initializeSampleData() {
+    const sampleThreads = [
+      {
+        subject: "/music/ general",
+        content: "i found this new album what do u guys think",
+        imageUrl: null,
+        imageName: null,
+        replyCount: 15,
+        imageCount: 7
+      },
+      {
+        subject: "happy guy online",
+        content: "today i feel rly happy do u feel happy today too?",
+        imageUrl: null,
+        imageName: null,
+        replyCount: 65,
+        imageCount: 18
+      },
+      {
+        subject: "/vidya/ general",
+        content: "the dark souls of gacha roguelite deck builder jrpg social deduction survival games",
+        imageUrl: null,
+        imageName: null,
+        replyCount: 24,
+        imageCount: 3
+      },
+      {
+        subject: "chicawaga",
+        content: ">meme of year",
+        imageUrl: null,
+        imageName: null,
+        replyCount: 15,
+        imageCount: 7
+      },
+      {
+        subject: "CHICKEN JOCKEY",
+        content: ">CHICKEN JOCKEY CHICKEN JOCKEY >CHICKEN JOCKEY",
+        imageUrl: null,
+        imageName: null,
+        replyCount: 15,
+        imageCount: 7
+      },
+      {
+        subject: "WAKE UP",
+        content: "i am not real i do not exist you are in ur mind",
+        imageUrl: null,
+        imageName: null,
+        replyCount: 15,
+        imageCount: 7
+      },
+      {
+        subject: "donut thread",
+        content: "donutdonutdonut donutdonutdonut donutdonutdonut",
+        imageUrl: null,
+        imageName: null,
+        replyCount: 24,
+        imageCount: 3
+      },
+      {
+        subject: "/MONKEY/ general",
+        content: "chimps are my favorite primate >^w^<",
+        imageUrl: null,
+        imageName: null,
+        replyCount: 24,
+        imageCount: 3
+      },
+      {
+        subject: "NAMIBIAAA",
+        content: ">born in namibia >feelsgood.jpg uropoors seething",
+        imageUrl: null,
+        imageName: null,
+        replyCount: 24,
+        imageCount: 3
+      },
+      {
+        subject: "mop gang",
+        content: "never dies",
+        imageUrl: null,
+        imageName: null,
+        replyCount: 24,
+        imageCount: 3
+      },
+      {
+        subject: "filter thread",
+        content: "filter filter filter filter filter filter filter filter filter filter filter filter",
+        imageUrl: null,
+        imageName: null,
+        replyCount: 24,
+        imageCount: 3
+      },
+      {
+        subject: "filter thread",
+        content: "filter filter filter filter filter filter filter filter filter filter filter filter",
+        imageUrl: null,
+        imageName: null,
+        replyCount: 24,
+        imageCount: 3
+      }
+    ];
+    
+    sampleThreads.forEach((threadData, index) => {
+      const id = this.currentThreadId++;
+      const thread: Thread = {
+        id,
+        subject: threadData.subject,
+        content: threadData.content,
+        imageUrl: threadData.imageUrl,
+        imageName: threadData.imageName,
+        createdAt: new Date(Date.now() - Math.random() * 86400000 * 7), // Random date within last week
+        replyCount: threadData.replyCount,
+        imageCount: threadData.imageCount,
+      };
+      this.threads.set(id, thread);
+    });
   }
 
   async getAllThreads(): Promise<Thread[]> {
