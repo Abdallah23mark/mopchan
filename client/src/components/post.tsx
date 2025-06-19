@@ -1,9 +1,7 @@
 import { useState } from "react";
 import type { Post } from "@shared/schema";
 import { Button } from "@/components/ui/button";
-import { useQuery } from "@tanstack/react-query";
 import { useAdmin } from "@/hooks/useAdmin";
-import PostPreview from "./post-preview";
 import BanUserModal from "./ban-user-modal";
 
 // Simple text formatting function that preserves functionality
@@ -30,8 +28,14 @@ function formatContentForDisplay(content: any, isAdminPost?: boolean) {
             <span 
               key={`${lineIndex}-${partIndex}`} 
               className="text-blue-600 hover:text-blue-800 cursor-pointer underline"
-              onMouseEnter={(e) => showPostPreview(postId!, e.clientX, e.clientY)}
-              onMouseLeave={hidePostPreview}
+              onClick={() => {
+                const element = document.querySelector(`[data-post-id="${postId}"]`);
+                if (element) {
+                  element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                  element.classList.add('bg-yellow-200');
+                  setTimeout(() => element.classList.remove('bg-yellow-200'), 2000);
+                }
+              }}
             >
               &gt;&gt;No. {postId}
             </span>
@@ -74,7 +78,6 @@ interface PostProps {
 }
 
 export default function PostComponent({ post, isOP = false, subject, onQuote, onDelete }: PostProps) {
-  const [hoverPreview, setHoverPreview] = useState<{ postId: string; x: number; y: number } | null>(null);
   const [showBanModal, setShowBanModal] = useState(false);
   const [expandedImage, setExpandedImage] = useState<string | null>(null);
 
@@ -95,30 +98,6 @@ export default function PostComponent({ post, isOP = false, subject, onQuote, on
 
   const expandImage = (imageUrl: string) => {
     setExpandedImage(imageUrl);
-  };
-
-  const showPostPreview = (postId: string, x: number, y: number) => {
-    // Highlight the referenced post if it exists on the page
-    const referencedPost = document.querySelector(`[data-post-id="${postId}"]`);
-    if (referencedPost) {
-      referencedPost.classList.add('bg-red-100', 'border-red-300');
-    }
-    
-    setHoverPreview({
-      postId,
-      x,
-      y,
-    });
-  };
-
-  const hidePostPreview = () => {
-    // Remove highlighting from all posts
-    const highlightedPosts = document.querySelectorAll('.bg-red-100');
-    highlightedPosts.forEach(post => {
-      post.classList.remove('bg-red-100', 'border-red-300');
-    });
-    
-    setHoverPreview(null);
   };
 
   return (
@@ -195,14 +174,7 @@ export default function PostComponent({ post, isOP = false, subject, onQuote, on
         </div>
       </div>
       
-      {hoverPreview && (
-        <PostPreview
-          postId={hoverPreview.postId}
-          x={hoverPreview.x}
-          y={hoverPreview.y}
-          onClose={hidePostPreview}
-        />
-      )}
+
       
       {expandedImage && (
         <div 
