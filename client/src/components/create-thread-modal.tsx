@@ -93,13 +93,7 @@ export default function CreateThreadModal({ trigger }: CreateThreadModalProps) {
       </DialogTrigger>
       <DialogContent className="max-w-2xl" style={{ backgroundColor: '#E0E8FF' }}>
         <DialogHeader>
-          <div className="flex justify-between items-center">
-            <DialogTitle className="text-red-800 font-bold">Start a New Thread</DialogTitle>
-            <AdminPostToggle 
-              onToggle={setIsAdminPost}
-              defaultValue={isAdminPost}
-            />
-          </div>
+          <DialogTitle className="text-red-800 font-bold">Start a New Thread</DialogTitle>
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-4">

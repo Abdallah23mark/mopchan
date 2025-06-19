@@ -5,7 +5,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
 import FileInputButton from "./file-input-button";
 import AdminPostToggle from "./admin-post-toggle";
 import { parseNameField } from "@/utils/tripcode";
@@ -85,13 +84,7 @@ export default function QuickReply({ threadId }: QuickReplyProps) {
 
   return (
     <div className="mt-6 bg-blue-50 border border-gray-400 p-4">
-      <div className="flex justify-between items-center mb-3">
-        <h3 className="font-bold text-sm">Quick Reply</h3>
-        <AdminPostToggle 
-          onToggle={setIsAdminPost}
-          defaultValue={isAdminPost}
-        />
-      </div>
+      <h3 className="font-bold text-sm mb-3">Quick Reply</h3>
       <form onSubmit={handleSubmit} className="space-y-3">
         <div>
           <Label className="block text-xs font-bold mb-1">Name (Optional)</Label>
