@@ -30,7 +30,8 @@ function formatContentForDisplay(content: any, isAdminPost?: boolean) {
             <span 
               key={`${lineIndex}-${partIndex}`} 
               className="text-blue-600 hover:text-blue-800 cursor-pointer underline"
-              title={`Quote link to post ${postId}`}
+              onMouseEnter={(e) => showPostPreview(postId!, e.clientX, e.clientY)}
+              onMouseLeave={hidePostPreview}
             >
               &gt;&gt;No. {postId}
             </span>
@@ -194,7 +195,14 @@ export default function PostComponent({ post, isOP = false, subject, onQuote, on
         </div>
       </div>
       
-
+      {hoverPreview && (
+        <PostPreview
+          postId={hoverPreview.postId}
+          x={hoverPreview.x}
+          y={hoverPreview.y}
+          onClose={hidePostPreview}
+        />
+      )}
       
       {expandedImage && (
         <div 

@@ -11,14 +11,19 @@ export default function PostPreview({ postId, x, y, onClose }: PostPreviewProps)
   // Clean the post ID
   const cleanPostId = postId.replace(/[\r\n\t]/g, '').trim();
 
-  // Try to extract post data from DOM
-  const postElement = document.querySelector(`[data-post-id="${cleanPostId}"]`);
+  // Try to extract post data from DOM safely
+  let postElement: Element | null = null;
+  try {
+    postElement = document.querySelector(`[data-post-id="${cleanPostId}"]`);
+  } catch (error) {
+    console.error('Error finding post element:', error);
+  }
   
   if (!postElement) {
     return (
       <div
         className="absolute bg-white border-2 border-red-500 p-3 shadow-lg z-50 max-w-md cursor-pointer"
-        style={{ left: x, top: y }}
+        style={{ left: Math.min(x, window.innerWidth - 300), top: Math.min(y, window.innerHeight - 150) }}
         onClick={onClose}
       >
         <div className="text-sm text-red-500">Post #{cleanPostId} not found</div>
