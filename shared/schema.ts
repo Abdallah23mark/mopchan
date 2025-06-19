@@ -14,6 +14,7 @@ export const threads = pgTable("threads", {
   imageCount: integer("image_count").default(0).notNull(),
   name: text("name").default("Anonymous"),
   tripcode: text("tripcode"),
+  isAdminPost: boolean("is_admin_post").default(false).notNull(),
 });
 
 export const posts = pgTable("posts", {
@@ -25,6 +26,7 @@ export const posts = pgTable("posts", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
   name: text("name").default("Anonymous"),
   tripcode: text("tripcode"),
+  isAdminPost: boolean("is_admin_post").default(false).notNull(),
 });
 
 // Admin users table

@@ -323,7 +323,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const clientIP = getClientIP(req);
       
-      const { subject, content, name, tripcode } = req.body;
+      const { subject, content, name, tripcode, isAdminPost } = req.body;
       
       if (!content || content.trim().length === 0) {
         return res.status(400).json({ message: "Content is required" });
@@ -336,6 +336,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         imageName: req.file ? req.file.originalname : null,
         name: name || "Anonymous",
         tripcode: tripcode || null,
+        isAdminPost: isAdminPost === "true",
       };
 
       const validatedData = insertThreadSchema.parse(threadData);

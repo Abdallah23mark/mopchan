@@ -19,8 +19,18 @@ export function formatDate(date: Date | string): string {
   });
 }
 
-export function formatContent(content: string): string {
-  return content;
+export function formatContent(content: string, isAdminPost?: boolean): string {
+  let formatted = content;
+  
+  // Handle greentext (lines starting with >)
+  formatted = formatted.replace(/^(&gt;.*$)/gm, '<span class="greentext">$1</span>');
+  
+  // Apply admin red text styling if it's an admin post (but not to greentext)
+  if (isAdminPost) {
+    formatted = formatted.replace(/^(?!<span class="greentext">)(.*)$/gm, '<span class="admin-text">$1</span>');
+  }
+  
+  return formatted;
 }
 
 export function truncateContent(content: string, maxLength: number = 100): string {

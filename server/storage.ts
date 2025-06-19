@@ -366,6 +366,7 @@ export class MemStorage {
         imageCount: 0,
         name: "Anonymous",
         tripcode: null,
+        isAdminPost: false,
       };
       this.threads.set(id, thread);
     });
@@ -396,6 +397,7 @@ export class MemStorage {
       imageCount: insertThread.imageUrl ? 1 : 0,
       name: insertThread.name || "Anonymous",
       tripcode: insertThread.tripcode || null,
+      isAdminPost: insertThread.isAdminPost || false,
     };
     this.threads.set(id, thread);
     return thread;
@@ -428,6 +430,7 @@ export class MemStorage {
       createdAt: new Date(),
       name: insertPost.name || "Anonymous",
       tripcode: insertPost.tripcode || null,
+      isAdminPost: insertPost.isAdminPost || false,
     };
     this.posts.set(id, post);
     

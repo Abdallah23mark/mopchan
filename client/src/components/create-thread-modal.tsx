@@ -25,8 +25,13 @@ export default function CreateThreadModal({ trigger }: CreateThreadModalProps) {
 
   const createThreadMutation = useMutation({
     mutationFn: async (formData: FormData) => {
+      const token = localStorage.getItem("adminToken");
+      const headers: any = {};
+      if (token) headers.Authorization = `Bearer ${token}`;
+      
       const res = await fetch("/api/threads", {
         method: "POST",
+        headers,
         body: formData,
       });
       
