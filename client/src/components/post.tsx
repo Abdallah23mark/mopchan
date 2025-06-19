@@ -109,7 +109,7 @@ export default function PostComponent({ post, isOP = false, subject, onQuote, on
   return (
     <div 
       id={`post-${post.id}`}
-      className={`flex flex-col md:flex-row gap-4 p-2 ${isOP ? 'theme-bg-post' : 'theme-bg-reply'} transition-all duration-200`}
+      className={`flex flex-col md:flex-row gap-4 p-3 border ${isOP ? 'theme-bg-post theme-border' : 'theme-bg-reply theme-border'} transition-all duration-200`}
       data-post-id={post.id}
     >
       {post.imageUrl && (
