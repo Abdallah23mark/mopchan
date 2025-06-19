@@ -7,6 +7,7 @@ import QuickReplyModal from "@/components/quick-reply-modal";
 import { apiRequest } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { useAdmin } from "@/hooks/useAdmin";
 
 interface ThreadData {
   thread: Thread;
@@ -19,7 +20,7 @@ export default function ThreadPage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Admin controls disabled for security
+  const { isAdmin, isLoading: adminLoading } = useAdmin();
 
   const { data, isLoading, error } = useQuery<ThreadData>({
     queryKey: ["/api/threads", threadId],
@@ -119,7 +120,7 @@ export default function ThreadPage() {
           <h2 className="text-lg font-bold theme-text-quote mb-2">
             Thread #{thread.id}
           </h2>
-          {false && (
+          {!adminLoading && isAdmin && (
             <Button
               onClick={handleDeleteThread}
               variant="outline"

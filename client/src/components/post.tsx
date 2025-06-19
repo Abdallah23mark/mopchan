@@ -2,6 +2,7 @@ import { useState } from "react";
 import type { Post } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
+import { useAdmin } from "@/hooks/useAdmin";
 import PostPreview from "./post-preview";
 
 interface PostProps {
@@ -15,7 +16,7 @@ interface PostProps {
 export default function PostComponent({ post, isOP = false, subject, onQuote, onDelete }: PostProps) {
   const [hoverPreview, setHoverPreview] = useState<{ postId: string; x: number; y: number } | null>(null);
 
-  // Admin controls disabled for security
+  const { isAdmin, isLoading: adminLoading } = useAdmin();
 
   const formatDate = (date: Date) => {
     return new Date(date).toLocaleDateString("en-US", {
@@ -150,7 +151,7 @@ export default function PostComponent({ post, isOP = false, subject, onQuote, on
           >
             [Quote]
           </Button>
-          {false && (
+          {!adminLoading && isAdmin && (
             <Button
               onClick={() => onDelete()}
               variant="outline"
