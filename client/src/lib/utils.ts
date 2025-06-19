@@ -20,14 +20,24 @@ export function formatDate(date: Date | string): string {
 }
 
 export function formatContent(content: string, isAdminPost?: boolean): string {
-  let formatted = content;
+  if (!content) return "";
   
-  // Handle greentext (lines starting with >)
-  formatted = formatted.replace(/^(&gt;.*$)/gm, '<span class="greentext">$1</span>');
+  let formatted = content
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/\n/g, '<br>');
   
-  // Apply admin red text styling if it's an admin post (but not to greentext)
+  // Handle post references (>>123456)
+  formatted = formatted.replace(/&gt;&gt;(\d+)/g, '<span class="text-blue-600 hover:text-blue-800 cursor-pointer underline" data-post-id="$1">&gt;&gt;$1</span>');
+  
   if (isAdminPost) {
-    formatted = formatted.replace(/^(?!<span class="greentext">)(.*)$/gm, '<span class="admin-text">$1</span>');
+    // For admin posts, make everything red including greentext
+    formatted = formatted.replace(/^(&gt;.*$)/gm, '<span class="text-red-600 font-medium">$1</span>');
+    // Apply red text to all other content lines
+    formatted = formatted.replace(/^(?!<span)(.*)$/gm, '<span class="text-red-600 font-medium">$1</span>');
+  } else {
+    // Handle greentext (lines starting with >) for non-admin posts
+    formatted = formatted.replace(/^(&gt;.*$)/gm, '<span class="text-green-600">$1</span>');
   }
   
   return formatted;

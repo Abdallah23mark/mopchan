@@ -153,10 +153,14 @@ export default function ThreadPage() {
           post={{
             id: thread.id,
             threadId: thread.id,
-            content: thread.content,
+            content: thread.content || "",
             imageUrl: thread.imageUrl,
             imageName: thread.imageName,
             createdAt: thread.createdAt,
+            ipAddress: thread.ipAddress || "",
+            name: (thread as any).name,
+            tripcode: (thread as any).tripcode,
+            isAdminPost: (thread as any).isAdminPost
           }}
           isOP={true}
           subject={thread.subject}
@@ -170,7 +174,11 @@ export default function ThreadPage() {
         {posts.map((post) => (
           <div key={post.id} className="border-l-4 theme-border pl-4 py-2 theme-bg-post">
             <PostComponent
-              post={post}
+              post={{
+                ...post,
+                content: post.content || "",
+                ipAddress: post.ipAddress || ""
+              }}
               isOP={false}
               onQuote={handleQuote}
               onDelete={() => handleDeletePost(post.id)}

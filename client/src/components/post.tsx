@@ -177,7 +177,7 @@ export default function PostComponent({ post, isOP = false, subject, onQuote, on
           )}
         </div>
         {subject && isOP && (
-          <div className="font-bold text-sm mb-2 text-blue-600">
+          <div className={`font-bold text-sm mb-2 ${(post as any).isAdminPost ? 'text-red-600 admin-subject' : 'text-blue-600'}`}>
             {subject}
           </div>
         )}

@@ -71,14 +71,25 @@ export default function ThreadCard({ thread }: ThreadCardProps) {
           <div className="text-right text-gray-600 mb-1 text-xs">
             {formatDate(thread.createdAt)}
           </div>
+          <div className="text-xs text-gray-600 mb-1">
+            <span className={`font-bold ${(thread as any).isAdminPost ? 'text-red-600 admin-name' : 'text-green-600'}`}>
+              {(thread as any).name || "Anonymous"}
+              {(thread as any).tripcode && (
+                <span className={`${(thread as any).isAdminPost ? 'text-red-600' : 'text-blue-600'}`}>
+                  {' '}!{(thread as any).tripcode}
+                </span>
+              )}
+            </span>
+          </div>
           {thread.subject && (
-            <div className="font-bold mb-1 text-black break-words">
+            <div className={`font-bold mb-1 break-words ${(thread as any).isAdminPost ? 'text-red-600 admin-subject' : 'text-black'}`}>
               {thread.subject}
             </div>
           )}
-          <div className="mb-2 text-black break-words leading-relaxed">
-            {formatContent(thread.content)}
-          </div>
+          <div 
+            className="mb-2 text-black break-words leading-relaxed"
+            dangerouslySetInnerHTML={{ __html: formatContent(thread.content || "", (thread as any).isAdminPost) }}
+          />
           <div className="text-gray-600 text-xs">
             R: {thread.replyCount} / I: {thread.imageUrl ? thread.imageCount + 1 : thread.imageCount}
           </div>
