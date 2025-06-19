@@ -19,7 +19,7 @@ export default function ThreadPage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { isAdmin, isLoading: adminLoading } = useAdmin();
+  // Admin controls disabled for security
 
   const { data, isLoading, error } = useQuery<ThreadData>({
     queryKey: ["/api/threads", threadId],
@@ -119,7 +119,7 @@ export default function ThreadPage() {
           <h2 className="text-lg font-bold theme-text-quote mb-2">
             Thread #{thread.id}
           </h2>
-          {!adminLoading && isAdmin && (
+          {false && (
             <Button
               onClick={handleDeleteThread}
               variant="outline"

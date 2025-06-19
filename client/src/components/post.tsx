@@ -15,7 +15,7 @@ interface PostProps {
 export default function PostComponent({ post, isOP = false, subject, onQuote, onDelete }: PostProps) {
   const [hoverPreview, setHoverPreview] = useState<{ postId: string; x: number; y: number } | null>(null);
 
-  const { isAdmin, isLoading: adminLoading } = useAdmin();
+  // Admin controls disabled for security
 
   const formatDate = (date: Date) => {
     return new Date(date).toLocaleDateString("en-US", {
@@ -150,7 +150,7 @@ export default function PostComponent({ post, isOP = false, subject, onQuote, on
           >
             [Quote]
           </Button>
-          {!adminLoading && isAdmin && (
+          {false && (
             <Button
               onClick={() => onDelete()}
               variant="outline"
