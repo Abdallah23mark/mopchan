@@ -250,10 +250,17 @@ export default function PostComponent({ post, isOP = false, subject, onQuote, on
           )}
           {post.imageName && (
             <div 
-              className="text-xs text-gray-600 mt-1 max-w-[250px] truncate cursor-help"
+              className="text-xs text-gray-600 mt-1 max-w-[250px] cursor-help relative group"
               title={post.imageName}
             >
-              {post.imageName.length > 30 ? post.imageName.substring(0, 30) + '...' : post.imageName}
+              <span className="truncate block">
+                {post.imageName.length > 30 ? post.imageName.substring(0, 30) + '...' : post.imageName}
+              </span>
+              {post.imageName.length > 30 && (
+                <div className="absolute bottom-full left-0 mb-1 bg-black text-white text-xs p-1 rounded opacity-0 group-hover:opacity-100 transition-opacity z-10 whitespace-nowrap max-w-xs">
+                  {post.imageName}
+                </div>
+              )}
             </div>
           )}
         </div>
