@@ -61,11 +61,8 @@ export default function ThreadCard({ thread }: ThreadCardProps) {
               style={{ maxHeight: '200px' }}
               onError={(e) => {
                 const img = e.target as HTMLImageElement;
-                img.style.display = 'none';
-                const container = img.parentElement;
-                if (container) {
-                  container.innerHTML = '<div class="w-full h-48 bg-gray-200 flex items-center justify-center text-xs text-gray-500">Image not available</div>';
-                }
+                img.src = '/attached_assets/imagenotfound2_1750389230268.png';
+                img.onError = null; // Prevent infinite loop
               }}
             />
           </div>

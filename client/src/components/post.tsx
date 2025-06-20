@@ -303,6 +303,11 @@ export default function PostComponent({ post, isOP = false, subject, onQuote, on
             src={expandedImage}
             alt="Expanded image"
             className="max-w-full max-h-full object-contain"
+            onError={(e) => {
+              const img = e.target as HTMLImageElement;
+              img.src = '/attached_assets/imagenotfound2_1750389230268.png';
+              img.onError = null; // Prevent infinite loop
+            }}
           />
         </div>
       )}
