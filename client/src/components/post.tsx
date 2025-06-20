@@ -18,13 +18,14 @@ function formatContentForDisplay(content: any, isAdminPost?: boolean, showPrevie
   return lines.map((line, index) => {
     // Process line for quote links first, then apply greentext styling
     const processLineWithQuotes = (text: string, lineIndex: number, isGreentext: boolean = false) => {
-      // Split by quote pattern but keep the quotes
-      const parts = text.split(/(>>(\d+))/g);
+      // Split by quote pattern but keep the quotes - handle both ">>123" and ">>No. 123" formats
+      const parts = text.split(/(>>(No\. )?(\d+))/g);
       
       return parts.map((part, partIndex) => {
-        if (part.match(/^>>(\d+)$/)) {
+        const quoteMatch = part.match(/^>>(No\. )?(\d+)$/);
+        if (quoteMatch) {
           // Quote link found - format as ">>No. X"
-          const postId = part.match(/^>>(\d+)$/)?.[1];
+          const postId = quoteMatch[2];
           return (
             <span 
               key={`${lineIndex}-${partIndex}`} 
