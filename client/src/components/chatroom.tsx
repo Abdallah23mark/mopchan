@@ -51,14 +51,11 @@ export default function Chatroom() {
     if (chatContainerRef.current && messages.length > 0) {
       const container = chatContainerRef.current;
       
-      // Always scroll to bottom on first load or when expanding chatroom
-      if (isFirstLoad && messages.length > 0) {
-        setTimeout(() => {
-          if (container) {
-            container.scrollTop = container.scrollHeight;
-            setIsFirstLoad(false);
-          }
-        }, 300);
+      // Always scroll to bottom on first load
+      if (isFirstLoad) {
+        // Immediate scroll without animation for initial load
+        container.scrollTop = container.scrollHeight;
+        setIsFirstLoad(false);
         return;
       }
       
@@ -148,13 +145,10 @@ export default function Chatroom() {
                   }));
                   console.log('📦 Loaded initial messages:', formattedMessages.length);
                   setMessages(formattedMessages);
-                  // Force scroll to bottom after loading messages
-                  setTimeout(() => {
-                    if (chatContainerRef.current) {
-                      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
-                      setIsFirstLoad(false);
-                    }
-                  }, 200);
+                  // Immediate scroll to bottom for smooth opening
+                  if (chatContainerRef.current) {
+                    chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+                  }
                 }
               })
               .catch(console.error);
@@ -301,7 +295,7 @@ export default function Chatroom() {
       </button>
       
       {isExpanded && (
-        <div className="mt-4 theme-bg-post theme-border border p-4 w-full max-w-2xl">
+        <div className="mt-4 theme-bg-post theme-border border p-4 w-full max-w-2xl transition-all duration-200 ease-in-out">
           <div className="mb-2">
             <div className="font-bold text-sm theme-text-main mb-1">Mopchan Chatroom</div>
             <div className="text-xs text-gray-600">
@@ -315,8 +309,9 @@ export default function Chatroom() {
           
           <div 
             ref={chatContainerRef}
-            className="h-64 overflow-y-auto theme-border border p-2 bg-white text-xs mb-3" 
+            className="h-64 overflow-y-auto theme-border border p-2 bg-white text-xs mb-3 transition-all duration-200" 
             id="chat-messages"
+            style={{ scrollBehavior: 'auto' }}
           >
             <div className="space-y-2">
               {messages.length === 0 && (
