@@ -35,10 +35,10 @@ export default function Chatroom() {
   const [tripcode, setTripcode] = useState("");
   const [socket, setSocket] = useState<WebSocket | null>(null);
   const [isFirstLoad, setIsFirstLoad] = useState(true);
-  const [forceUpdate, setForceUpdate] = useState(0);
+  const [lastMessageId, setLastMessageId] = useState<number>(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
-  const messagesRef = useRef<ChatMessage[]>([]);
+  const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (!username) {
@@ -51,14 +51,14 @@ export default function Chatroom() {
     if (chatContainerRef.current && messages.length > 0) {
       const container = chatContainerRef.current;
       
-      // Always scroll to bottom on first load
-      if (isFirstLoad) {
+      // Always scroll to bottom on first load or when expanding chatroom
+      if (isFirstLoad && messages.length > 0) {
         setTimeout(() => {
           if (container) {
             container.scrollTop = container.scrollHeight;
             setIsFirstLoad(false);
           }
-        }, 100);
+        }, 300);
         return;
       }
       
@@ -73,6 +73,48 @@ export default function Chatroom() {
       }
     }
   }, [messages, isFirstLoad]);
+
+  // Fallback polling mechanism for message updates
+  useEffect(() => {
+    if (!isExpanded) {
+      if (pollIntervalRef.current) {
+        clearInterval(pollIntervalRef.current);
+        pollIntervalRef.current = null;
+      }
+      return;
+    }
+
+    // Poll for new messages every 3 seconds as fallback
+    pollIntervalRef.current = setInterval(async () => {
+      try {
+        const response = await fetch("/api/chat/messages");
+        const data = await response.json();
+        if (Array.isArray(data)) {
+          const formattedMessages = data.map(msg => ({
+            ...msg,
+            timestamp: new Date(msg.createdAt)
+          }));
+          
+          // Check for new messages by comparing last message ID
+          const lastMsg = messages[messages.length - 1];
+          const newLastMsg = formattedMessages[formattedMessages.length - 1];
+          
+          if (!lastMsg || (newLastMsg && newLastMsg.id > lastMsg.id)) {
+            console.log('📡 POLLING: Found new messages, updating state');
+            setMessages(formattedMessages);
+          }
+        }
+      } catch (error) {
+        console.error('Polling error:', error);
+      }
+    }, 3000);
+
+    return () => {
+      if (pollIntervalRef.current) {
+        clearInterval(pollIntervalRef.current);
+      }
+    };
+  }, [isExpanded, messages.length]);
 
   // Initialize WebSocket when expanded
   useEffect(() => {
@@ -105,8 +147,14 @@ export default function Chatroom() {
                     timestamp: new Date(msg.createdAt)
                   }));
                   console.log('📦 Loaded initial messages:', formattedMessages.length);
-                  messagesRef.current = formattedMessages;
                   setMessages(formattedMessages);
+                  // Force scroll to bottom after loading messages
+                  setTimeout(() => {
+                    if (chatContainerRef.current) {
+                      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+                      setIsFirstLoad(false);
+                    }
+                  }, 200);
                 }
               })
               .catch(console.error);
@@ -129,16 +177,15 @@ export default function Chatroom() {
               };
               console.log('PROCESSING new message:', newMsg);
               
-              // Update messages using ref to prevent stale closures
-              const messageExists = messagesRef.current.some(msg => msg.id === newMsg.id);
-              if (!messageExists) {
-                messagesRef.current = [...messagesRef.current, newMsg];
-                setMessages([...messagesRef.current]);
-                setForceUpdate(prev => prev + 1);
-                console.log('MESSAGE ADDED to state. Total:', messagesRef.current.length);
-              } else {
-                console.log('DUPLICATE message prevented:', newMsg.id);
-              }
+              // Update messages directly
+              setMessages(prevMessages => {
+                const messageExists = prevMessages.some(msg => msg.id === newMsg.id);
+                if (!messageExists) {
+                  console.log('WEBSOCKET: Adding new message to state');
+                  return [...prevMessages, newMsg];
+                }
+                return prevMessages;
+              });
             } else if (data.type === 'pong') {
               console.log('PONG received from server');
             } else {
@@ -178,7 +225,9 @@ export default function Chatroom() {
         socket.close();
         setSocket(null);
       }
+      // Reset states when closing chatroom
       setIsFirstLoad(true);
+      setMessages([]);
     }
 
     return () => {
