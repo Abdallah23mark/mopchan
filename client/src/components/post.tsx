@@ -29,7 +29,16 @@ function formatContentForDisplay(content: any, isAdminPost?: boolean, showPrevie
             <span 
               key={`${lineIndex}-${partIndex}`} 
               className="text-blue-600 hover:text-blue-800 cursor-pointer underline"
-
+              onMouseEnter={(e) => {
+                if (showPreview) {
+                  showPreview(postId!, e.clientX, e.clientY);
+                }
+              }}
+              onMouseLeave={() => {
+                if (hidePreview) {
+                  hidePreview();
+                }
+              }}
               onClick={() => {
                 const element = document.querySelector(`[data-post-id="${postId}"]`);
                 if (element) {
