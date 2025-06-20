@@ -25,7 +25,7 @@ export default function FileInputButton({ accept, onChange, className, children 
       <input
         ref={fileInputRef}
         type="file"
-        accept={accept}
+        accept={accept || "image/*,.webm"}
         onChange={handleFileChange}
         className="hidden"
       />

@@ -12,14 +12,14 @@ import { WebSocketServer, WebSocket } from "ws";
 const upload = multer({
   dest: 'uploads/',
   limits: {
-    fileSize: 3 * 1024 * 1024, // 3MB limit
+    fileSize: 10 * 1024 * 1024, // 10MB limit for webm files
   },
   fileFilter: (req, file, cb) => {
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'video/webm'];
     if (allowedTypes.includes(file.mimetype)) {
       cb(null, true);
     } else {
-      cb(new Error('Only image files are allowed'));
+      cb(new Error('Only image files (jpg, png, gif, webp) and webm videos are allowed'));
     }
   }
 });

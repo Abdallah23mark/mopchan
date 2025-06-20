@@ -54,17 +54,27 @@ export default function ThreadCard({ thread }: ThreadCardProps) {
       <div className="theme-bg-post theme-border border cursor-pointer hover:opacity-90 transition-colors" style={{ minHeight: '150px' }}>
         {thread.imageUrl && (
           <div className="relative">
-            <img
-              src={thread.imageUrl}
-              alt={thread.imageName || "Thread image"}
-              className="w-full object-contain cursor-pointer hover:opacity-80"
-              style={{ maxHeight: '200px' }}
-              onError={(e) => {
-                const img = e.target as HTMLImageElement;
-                img.src = '/attached_assets/imagenotfound3_1750389506282.png';
-                img.onError = null; // Prevent infinite loop
-              }}
-            />
+            {thread.imageUrl.toLowerCase().endsWith('.webm') ? (
+              <video
+                src={thread.imageUrl}
+                className="w-full object-contain cursor-pointer hover:opacity-80"
+                style={{ maxHeight: '200px' }}
+                muted
+                preload="metadata"
+              />
+            ) : (
+              <img
+                src={thread.imageUrl}
+                alt={thread.imageName || "Thread image"}
+                className="w-full object-contain cursor-pointer hover:opacity-80"
+                style={{ maxHeight: '200px' }}
+                onError={(e) => {
+                  const img = e.target as HTMLImageElement;
+                  img.src = '/attached_assets/imagenotfound3_1750389506282.png';
+                  img.onError = null; // Prevent infinite loop
+                }}
+              />
+            )}
           </div>
         )}
         <div className="p-2 text-xs leading-tight">

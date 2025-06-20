@@ -209,12 +209,24 @@ export default function PostComponent({ post, isOP = false, subject, onQuote, on
     >
       {post.imageUrl && (
         <div className="flex-shrink-0">
-          <img
-            src={post.imageUrl}
-            alt={post.imageName || "Post image"}
-            className="image-thumb max-w-full md:max-w-xs border chan-border cursor-pointer"
-            onClick={() => expandImage(post.imageUrl!)}
-          />
+          {post.imageUrl.toLowerCase().endsWith('.webm') ? (
+            <video
+              src={post.imageUrl}
+              className="image-thumb max-w-full md:max-w-xs border chan-border cursor-pointer"
+              controls
+              muted
+              loop
+              preload="metadata"
+              onClick={() => expandImage(post.imageUrl!)}
+            />
+          ) : (
+            <img
+              src={post.imageUrl}
+              alt={post.imageName || "Post image"}
+              className="image-thumb max-w-full md:max-w-xs border chan-border cursor-pointer"
+              onClick={() => expandImage(post.imageUrl!)}
+            />
+          )}
           {post.imageName && (
             <div className="text-xs text-gray-600 mt-1">
               {post.imageName}
@@ -303,16 +315,27 @@ export default function PostComponent({ post, isOP = false, subject, onQuote, on
           className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 cursor-pointer"
           onClick={() => setExpandedImage(null)}
         >
-          <img
-            src={expandedImage}
-            alt="Expanded image"
-            className="max-w-full max-h-full object-contain"
-            onError={(e) => {
-              const img = e.target as HTMLImageElement;
-              img.src = '/attached_assets/imagenotfound3_1750389506282.png';
-              img.onError = null; // Prevent infinite loop
-            }}
-          />
+          {expandedImage.toLowerCase().endsWith('.webm') ? (
+            <video
+              src={expandedImage}
+              className="max-w-full max-h-full object-contain"
+              controls
+              autoPlay
+              loop
+              onClick={(e) => e.stopPropagation()}
+            />
+          ) : (
+            <img
+              src={expandedImage}
+              alt="Expanded image"
+              className="max-w-full max-h-full object-contain"
+              onError={(e) => {
+                const img = e.target as HTMLImageElement;
+                img.src = '/attached_assets/imagenotfound3_1750389506282.png';
+                img.onError = null; // Prevent infinite loop
+              }}
+            />
+          )}
         </div>
       )}
       
