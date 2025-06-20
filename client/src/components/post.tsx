@@ -82,14 +82,16 @@ function formatContentForDisplay(content: any, isAdminPost?: boolean, showPrevie
                 }
               }}
               onClick={() => {
-                const element = document.querySelector(`[data-post-id="${part.postId}"]`);
+                // Use post number for lookup instead of post ID
+                const element = document.querySelector(`[data-post-number="${part.postId}"]`);
                 if (element) {
                   element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                  element.style.transition = 'background-color 0.3s ease';
-                  element.style.backgroundColor = '#ffff08';
+                  element.classList.add('bg-yellow-200', 'border-2', 'border-yellow-400');
                   setTimeout(() => {
-                    element.style.backgroundColor = '';
+                    element.classList.remove('bg-yellow-200', 'border-2', 'border-yellow-400');
                   }, 2000);
+                } else {
+                  console.log(`Post with number ${part.postId} not found on this page`);
                 }
               }}
             >
