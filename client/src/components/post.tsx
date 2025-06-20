@@ -219,7 +219,19 @@ export default function PostComponent({ post, isOP = false, subject, onQuote, on
               muted
               loop
               preload="metadata"
+              style={{ 
+                maxWidth: '250px', 
+                maxHeight: '250px', 
+                minWidth: '150px',
+                minHeight: '100px',
+                width: 'auto', 
+                height: 'auto',
+                backgroundColor: '#000'
+              }}
               onClick={() => expandImage(post.imageUrl!, post.imageName)}
+              onError={(e) => {
+                console.error('Video failed to load:', post.imageUrl);
+              }}
             />
           ) : (
             <img
@@ -327,6 +339,7 @@ export default function PostComponent({ post, isOP = false, subject, onQuote, on
               controls
               autoPlay
               loop
+              style={{ maxWidth: '90vw', maxHeight: '90vh' }}
               onClick={(e) => e.stopPropagation()}
             />
           ) : (

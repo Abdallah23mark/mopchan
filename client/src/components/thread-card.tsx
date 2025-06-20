@@ -58,9 +58,10 @@ export default function ThreadCard({ thread }: ThreadCardProps) {
               <video
                 src={thread.imageUrl}
                 className="w-full object-contain cursor-pointer hover:opacity-80"
-                style={{ maxHeight: '200px' }}
+                style={{ maxHeight: '200px', width: 'auto', height: 'auto' }}
                 muted
                 preload="metadata"
+                controls
               />
             ) : (
               <img
