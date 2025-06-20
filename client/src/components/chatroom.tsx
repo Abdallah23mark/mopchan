@@ -35,8 +35,10 @@ export default function Chatroom() {
   const [tripcode, setTripcode] = useState("");
   const [socket, setSocket] = useState<WebSocket | null>(null);
   const [isFirstLoad, setIsFirstLoad] = useState(true);
+  const [forceUpdate, setForceUpdate] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
+  const messagesRef = useRef<ChatMessage[]>([]);
 
   useEffect(() => {
     if (!username) {
@@ -103,6 +105,7 @@ export default function Chatroom() {
                     timestamp: new Date(msg.createdAt)
                   }));
                   console.log('📦 Loaded initial messages:', formattedMessages.length);
+                  messagesRef.current = formattedMessages;
                   setMessages(formattedMessages);
                 }
               })
@@ -115,29 +118,34 @@ export default function Chatroom() {
         
         ws.onmessage = (event) => {
           try {
+            console.log('RAW WebSocket data received:', event.data);
             const data = JSON.parse(event.data);
+            console.log('PARSED WebSocket data:', data);
             
             if (data.type === 'chat_message' && data.message) {
               const newMsg = {
                 ...data.message,
                 timestamp: new Date(data.message.createdAt)
               };
-              console.log('💬 Received new message:', newMsg.username, newMsg.message.substring(0, 50));
+              console.log('PROCESSING new message:', newMsg);
               
-              setMessages(prevMessages => {
-                // Prevent duplicates
-                const messageExists = prevMessages.some(msg => msg.id === newMsg.id);
-                if (messageExists) {
-                  console.log('⚠️ Duplicate message prevented');
-                  return prevMessages;
-                }
-                return [...prevMessages, newMsg];
-              });
+              // Update messages using ref to prevent stale closures
+              const messageExists = messagesRef.current.some(msg => msg.id === newMsg.id);
+              if (!messageExists) {
+                messagesRef.current = [...messagesRef.current, newMsg];
+                setMessages([...messagesRef.current]);
+                setForceUpdate(prev => prev + 1);
+                console.log('MESSAGE ADDED to state. Total:', messagesRef.current.length);
+              } else {
+                console.log('DUPLICATE message prevented:', newMsg.id);
+              }
             } else if (data.type === 'pong') {
-              console.log('🏓 Connection confirmed');
+              console.log('PONG received from server');
+            } else {
+              console.log('UNKNOWN message type:', data.type);
             }
           } catch (err) {
-            console.error("Error parsing message:", err);
+            console.error("ERROR parsing WebSocket message:", err);
           }
         };
         
@@ -199,13 +207,18 @@ export default function Chatroom() {
     }
 
     try {
-      socket.send(JSON.stringify({
-        type: 'chat_message',
-        username: username,
-        message: messageText,
-        tripcode: userTripcode || null
-      }));
-      setInputMessage("");
+      if (socket && socket.readyState === WebSocket.OPEN) {
+        socket.send(JSON.stringify({
+          type: 'chat_message',
+          username: username,
+          message: messageText,
+          tripcode: userTripcode || null
+        }));
+        setInputMessage("");
+        console.log('MESSAGE SENT via WebSocket');
+      } else {
+        console.error('WebSocket not connected');
+      }
     } catch (err) {
       console.error("Failed to send message:", err);
     }
