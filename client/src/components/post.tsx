@@ -18,21 +18,62 @@ function formatContentForDisplay(content: any, isAdminPost?: boolean, showPrevie
   return lines.map((line, index) => {
     // Process line for quote links first, then apply greentext styling
     const processLineWithQuotes = (text: string, lineIndex: number, isGreentext: boolean = false) => {
-      // Split by quote pattern but keep the quotes - handle both ">>123" and ">>No. 123" formats
-      const parts = text.split(/(>>(No\. )?(\d+))/g);
+      // Use a simpler approach - find quote patterns and replace them
+      const quoteRegex = />>(No\. )?(\d+)/g;
+      let lastIndex = 0;
+      const parts = [];
+      let match;
+      
+      while ((match = quoteRegex.exec(text)) !== null) {
+        // Add text before the quote
+        if (match.index > lastIndex) {
+          const beforeText = text.slice(lastIndex, match.index);
+          if (beforeText) {
+            parts.push({
+              type: 'text',
+              content: beforeText
+            });
+          }
+        }
+        
+        // Add the quote
+        parts.push({
+          type: 'quote',
+          content: match[0],
+          postId: match[2]
+        });
+        
+        lastIndex = match.index + match[0].length;
+      }
+      
+      // Add remaining text
+      if (lastIndex < text.length) {
+        const remainingText = text.slice(lastIndex);
+        if (remainingText) {
+          parts.push({
+            type: 'text',
+            content: remainingText
+          });
+        }
+      }
+      
+      // If no quotes found, return the whole text
+      if (parts.length === 0) {
+        parts.push({
+          type: 'text',
+          content: text
+        });
+      }
       
       return parts.map((part, partIndex) => {
-        const quoteMatch = part?.match(/^>>(No\. )?(\d+)$/);
-        if (quoteMatch) {
-          // Quote link found - format as ">>No. X"
-          const postId = quoteMatch[2];
+        if (part.type === 'quote') {
           return (
             <span 
               key={`${lineIndex}-${partIndex}`} 
               className="text-blue-600 hover:text-blue-800 cursor-pointer underline"
               onMouseEnter={(e) => {
                 if (showPreview) {
-                  showPreview(postId!, e.clientX, e.clientY);
+                  showPreview(part.postId!, e.clientX, e.clientY);
                 }
               }}
               onMouseLeave={() => {
@@ -41,7 +82,7 @@ function formatContentForDisplay(content: any, isAdminPost?: boolean, showPrevie
                 }
               }}
               onClick={() => {
-                const element = document.querySelector(`[data-post-id="${postId}"]`);
+                const element = document.querySelector(`[data-post-id="${part.postId}"]`);
                 if (element) {
                   element.scrollIntoView({ behavior: 'smooth', block: 'center' });
                   element.style.transition = 'background-color 0.3s ease';
@@ -52,12 +93,9 @@ function formatContentForDisplay(content: any, isAdminPost?: boolean, showPrevie
                 }
               }}
             >
-              {part}
+              {part.content.includes('No.') ? part.content : `>>No. ${part.postId}`}
             </span>
           );
-        } else if (part === '') {
-          // Empty string from split, ignore
-          return null;
         } else {
           // Regular text - apply greentext styling if needed
           return (
@@ -65,11 +103,11 @@ function formatContentForDisplay(content: any, isAdminPost?: boolean, showPrevie
               key={`${lineIndex}-${partIndex}`}
               className={isGreentext && !isAdminPost ? 'text-green-600 font-bold' : ''}
             >
-              {part}
+              {part.content}
             </span>
           );
         }
-      }).filter(Boolean);
+      });
     };
 
     // Check if line is greentext (starts with > but not >>)
