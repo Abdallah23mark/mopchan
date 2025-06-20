@@ -86,9 +86,10 @@ function formatContentForDisplay(content: any, isAdminPost?: boolean, showPrevie
                 const element = document.querySelector(`[data-post-number="${part.postId}"]`);
                 if (element) {
                   element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                  element.classList.add('bg-yellow-200', 'border-2', 'border-yellow-400');
+                  element.style.transition = 'background-color 0.3s ease';
+                  element.style.backgroundColor = '#ffff08';
                   setTimeout(() => {
-                    element.classList.remove('bg-yellow-200', 'border-2', 'border-yellow-400');
+                    element.style.backgroundColor = '';
                   }, 2000);
                 } else {
                   console.log(`Post with number ${part.postId} not found on this page`);
