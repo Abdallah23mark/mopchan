@@ -76,13 +76,21 @@ export default function Chatroom() {
       
       ws.onmessage = (event) => {
         try {
+          console.log('Received WebSocket message:', event.data);
           const data = JSON.parse(event.data);
+          console.log('Parsed WebSocket data:', data);
           if (data.type === 'chat_message' && data.message) {
             const newMsg = {
               ...data.message,
               timestamp: new Date(data.message.createdAt)
             };
-            setMessages(prev => [...prev, newMsg]);
+            console.log('Adding new message to state:', newMsg);
+            setMessages(prev => {
+              console.log('Current messages before update:', prev);
+              const updated = [...prev, newMsg];
+              console.log('Updated messages after add:', updated);
+              return updated;
+            });
           }
         } catch (err) {
           console.error("Error parsing message:", err);
