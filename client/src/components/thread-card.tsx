@@ -51,14 +51,14 @@ export default function ThreadCard({ thread }: ThreadCardProps) {
 
   return (
     <Link href={`/thread/${thread.id}`}>
-      <div className="theme-bg-post theme-border border cursor-pointer hover:opacity-90 transition-colors mobile-thread-card" style={{ minHeight: '150px' }}>
+      <div className="theme-bg-post theme-border border cursor-pointer hover:opacity-90 transition-colors" style={{ minHeight: '150px' }}>
         {thread.imageUrl && (
-          <div className="relative flex justify-center items-center p-1 md:p-2" style={{ minHeight: '120px' }}>
+          <div className="relative flex justify-center items-center" style={{ minHeight: '120px' }}>
             {thread.imageName?.toLowerCase().endsWith('.webm') ? (
               <video
                 src={thread.imageUrl}
                 className="object-contain cursor-pointer hover:opacity-80 mx-auto"
-                style={{ maxHeight: '180px', maxWidth: '100%', width: 'auto', height: 'auto' }}
+                style={{ maxHeight: '200px', maxWidth: '100%', width: 'auto', height: 'auto' }}
                 muted
                 preload="metadata"
                 onMouseEnter={(e) => {
@@ -76,7 +76,7 @@ export default function ThreadCard({ thread }: ThreadCardProps) {
                 src={thread.imageUrl}
                 alt={thread.imageName || "Thread image"}
                 className="object-contain cursor-pointer hover:opacity-80 mx-auto"
-                style={{ maxHeight: '180px', maxWidth: '100%' }}
+                style={{ maxHeight: '200px', maxWidth: '100%' }}
                 onError={(e) => {
                   const img = e.target as HTMLImageElement;
                   img.src = '/attached_assets/imagenotfound3_1750389506282.png';

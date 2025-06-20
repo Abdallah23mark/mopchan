@@ -200,7 +200,7 @@ export default function PostComponent({ post, isOP = false, subject, onQuote, on
   return (
     <div 
       id={`post-${post.id}`}
-      className={`flex flex-col md:flex-row gap-2 md:gap-4 p-2 md:p-4 ${isOP ? 'theme-bg-post' : 'theme-bg-reply'} transition-all duration-200 mobile-post`}
+      className={`flex flex-col md:flex-row gap-4 p-2 ${isOP ? 'theme-bg-post' : 'theme-bg-reply'} transition-all duration-200`}
       data-post-id={post.id}
       data-post-number={post.postNumber || post.id}
       ref={(el) => {
@@ -210,40 +210,31 @@ export default function PostComponent({ post, isOP = false, subject, onQuote, on
       }}
     >
       {post.imageUrl && (
-        <div className="flex-shrink-0 mobile-post-image">
+        <div className="flex-shrink-0">
           {post.imageName?.toLowerCase().endsWith('.webm') ? (
             <video
               src={post.imageUrl}
-              className="image-thumb cursor-pointer w-full md:w-auto"
+              className="image-thumb cursor-pointer"
               muted
               loop
               preload="metadata"
               style={{ 
-                maxWidth: '100%', 
+                maxWidth: '250px', 
                 maxHeight: '250px',
                 width: 'auto', 
                 height: 'auto',
-                backgroundColor: '#f0f0f0',
+                backgroundColor: '#000',
                 border: '1px solid #ccc'
               }}
-              poster="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDIwMCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CiAgPHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIxMDAiIGZpbGw9IiNmMGYwZjAiLz4KICA8cGF0aCBkPSJNNzAuNzUgMzVMMTI5LjI1IDM1TDEwMCA2MC4yNUw3MC43NSAzNVoiIGZpbGw9IiM2NjY2NjYiLz4KICA8Y2lyY2xlIGN4PSIxMDAiIGN5PSI0NS41IiByPSI3LjUiIGZpbGw9IiNmZmZmZmYiLz4KICA8dGV4dCB4PSIxMDAiIHk9IjcwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjNjY2NjY2IiBmb250LXNpemU9IjEwIj5XZWJNPC90ZXh0Pgo8L3N2Zz4K"
               onClick={() => expandImage(post.imageUrl!, post.imageName)}
               onMouseEnter={(e) => {
                 const video = e.target as HTMLVideoElement;
-                if (window.innerWidth >= 768) { // Only on desktop
-                  video.play();
-                }
+                video.play();
               }}
               onMouseLeave={(e) => {
                 const video = e.target as HTMLVideoElement;
-                if (window.innerWidth >= 768) { // Only on desktop
-                  video.pause();
-                  video.currentTime = 0;
-                }
-              }}
-              onTouchStart={(e) => {
-                const video = e.target as HTMLVideoElement;
-                video.play(); // Touch to play on mobile
+                video.pause();
+                video.currentTime = 0;
               }}
               onError={(e) => {
                 console.error('Video failed to load:', post.imageUrl);
@@ -253,13 +244,13 @@ export default function PostComponent({ post, isOP = false, subject, onQuote, on
             <img
               src={post.imageUrl}
               alt={post.imageName || "Post image"}
-              className="image-thumb w-full md:max-w-xs border chan-border cursor-pointer"
+              className="image-thumb max-w-full md:max-w-xs border chan-border cursor-pointer"
               onClick={() => expandImage(post.imageUrl!, post.imageName)}
             />
           )}
           {post.imageName && (
             <div 
-              className="text-xs text-gray-600 mt-1 w-full md:w-[250px] cursor-help truncate"
+              className="text-xs text-gray-600 mt-1 w-[250px] cursor-help truncate"
               title={post.imageName}
             >
               {post.imageName.length > 30 ? post.imageName.substring(0, 30) + '...' : post.imageName}
