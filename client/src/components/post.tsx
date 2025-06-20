@@ -123,11 +123,15 @@ export default function PostComponent({ post, isOP = false, subject, onQuote, on
       const nameElement = postElement.querySelector('.post-name');
       const dateElement = postElement.querySelector('.post-date');
       
+      // Get the raw content from the post data
+      const postData = (postElement as any).__postData;
+      const rawContent = postData?.content || contentElement?.textContent || 'Post content not found';
+      
       setHoverPreview({
         postId,
         x: Math.min(x, window.innerWidth - 400),
         y: Math.min(y, window.innerHeight - 300),
-        content: contentElement?.textContent || 'Post content not found',
+        content: rawContent,
         name: nameElement?.textContent || 'Anonymous',
         date: dateElement?.textContent || ''
       });
@@ -232,8 +236,12 @@ export default function PostComponent({ post, isOP = false, subject, onQuote, on
             <span className="ml-2 text-blue-600">No. {hoverPreview.postId}</span>
           </div>
           <div className="text-xs leading-relaxed whitespace-pre-wrap">
-            {hoverPreview.content.length > 200 
-              ? hoverPreview.content.substring(0, 200) + '...' 
+            {typeof hoverPreview.content === 'string' 
+              ? formatContentForDisplay(
+                  hoverPreview.content.length > 200 
+                    ? hoverPreview.content.substring(0, 200) + '...' 
+                    : hoverPreview.content
+                )
               : hoverPreview.content}
           </div>
         </div>
