@@ -22,7 +22,7 @@ function formatContentForDisplay(content: any, isAdminPost?: boolean, showPrevie
       const parts = text.split(/(>>(No\. )?(\d+))/g);
       
       return parts.map((part, partIndex) => {
-        const quoteMatch = part.match(/^>>(No\. )?(\d+)$/);
+        const quoteMatch = part?.match(/^>>(No\. )?(\d+)$/);
         if (quoteMatch) {
           // Quote link found - format as ">>No. X"
           const postId = quoteMatch[2];
