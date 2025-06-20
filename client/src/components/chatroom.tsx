@@ -34,6 +34,7 @@ export default function Chatroom() {
   const [username, setUsername] = useState("");
   const [tripcode, setTripcode] = useState("");
   const [socket, setSocket] = useState<WebSocket | null>(null);
+  const [hasInitialLoad, setHasInitialLoad] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -42,17 +43,13 @@ export default function Chatroom() {
     }
   }, []);
 
-  // Only auto-scroll if user is near the bottom of the chat
+  // Only auto-scroll on initial load
   useEffect(() => {
-    const chatContainer = messagesEndRef.current?.parentElement;
-    if (!chatContainer) return;
-
-    const isNearBottom = chatContainer.scrollHeight - chatContainer.scrollTop - chatContainer.clientHeight < 50;
-    
-    if (isNearBottom) {
+    if (!hasInitialLoad && messages.length > 0) {
       messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+      setHasInitialLoad(true);
     }
-  }, [messages]);
+  }, [messages, hasInitialLoad]);
 
   // Initialize WebSocket when expanded
   useEffect(() => {
@@ -93,6 +90,7 @@ export default function Chatroom() {
                 }));
                 console.log('Loaded initial messages:', formattedMessages);
                 setMessages(formattedMessages);
+                setHasInitialLoad(true);
               }
             })
             .catch(console.error);
