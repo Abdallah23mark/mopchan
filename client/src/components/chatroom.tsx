@@ -169,7 +169,7 @@ export default function Chatroom() {
                       {msg.username}
                       {msg.tripcode && <span className="theme-text-quote"> !{msg.tripcode}</span>}
                     </span>
-                    <span className="text-gray-600 text-xs">{formatTime(msg.timestamp)}</span>
+                    <span className="text-gray-600 text-xs">{formatTime(msg.createdAt)}</span>
                   </div>
                   <div className="ml-2">
                     {formatMessage(msg.message)}
@@ -180,11 +180,11 @@ export default function Chatroom() {
             </div>
           </div>
           
-          <form onSubmit={handleSendMessage}>
+          <form onSubmit={handleSubmit}>
             <div className="flex gap-2">
               <Input
-                value={inputMessage}
-                onChange={(e) => setInputMessage(e.target.value)}
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
                 placeholder="Type message... (add #password for tripcode)"
                 className="text-xs theme-border"
                 maxLength={500}
@@ -192,7 +192,7 @@ export default function Chatroom() {
               <Button 
                 type="submit" 
                 className="bg-white theme-border border text-xs hover:bg-gray-100 theme-text-main"
-                disabled={!inputMessage.trim()}
+                disabled={!newMessage.trim()}
               >
                 Send
               </Button>
