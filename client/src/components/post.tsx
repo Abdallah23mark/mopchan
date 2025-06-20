@@ -251,7 +251,6 @@ export default function PostComponent({ post, isOP = false, subject, onQuote, on
           {post.imageName && (
             <div 
               className="text-xs text-gray-600 mt-1 w-[250px] cursor-help relative group"
-              title={post.imageName}
             >
               <span className="truncate block">
                 {post.imageName.length > 30 ? post.imageName.substring(0, 30) + '...' : post.imageName}
