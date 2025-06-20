@@ -276,10 +276,16 @@ export class DatabaseStorage implements IStorage {
 
   // Helper method to get next global post number
   private async getNextGlobalPostNumber(): Promise<number> {
-    const [maxThreadNumber] = await db.select({ max: sql<number>`COALESCE(MAX(post_number), 0)` }).from(threads);
-    const [maxPostNumber] = await db.select({ max: sql<number>`COALESCE(MAX(post_number), 0)` }).from(posts);
+    // Get the highest post number from both tables
+    const threadQuery = db.select({ max: sql<number>`COALESCE(MAX(post_number), 0)` }).from(threads);
+    const postQuery = db.select({ max: sql<number>`COALESCE(MAX(post_number), 0)` }).from(posts);
     
-    return Math.max(maxThreadNumber.max || 0, maxPostNumber.max || 0) + 1;
+    const [threadResult, postResult] = await Promise.all([threadQuery, postQuery]);
+    
+    const maxThreadNumber = threadResult[0]?.max || 0;
+    const maxPostNumber = postResult[0]?.max || 0;
+    
+    return Math.max(maxThreadNumber, maxPostNumber) + 1;
   }
 
   async getChatMessages(limit: number = 50): Promise<ChatMessage[]> {
