@@ -34,8 +34,8 @@ export default function Chatroom() {
   const [username, setUsername] = useState("");
   const [tripcode, setTripcode] = useState("");
   const [socket, setSocket] = useState<WebSocket | null>(null);
-  const [hasInitialLoad, setHasInitialLoad] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!username) {
@@ -43,13 +43,18 @@ export default function Chatroom() {
     }
   }, []);
 
-  // Only auto-scroll on initial load
+  // Auto-scroll chat container to bottom when new messages arrive
   useEffect(() => {
-    if (!hasInitialLoad && messages.length > 0) {
-      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-      setHasInitialLoad(true);
+    if (chatContainerRef.current) {
+      const container = chatContainerRef.current;
+      const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 100;
+      
+      // Always scroll to bottom for new messages or if user is near bottom
+      if (isNearBottom || messages.length <= 1) {
+        container.scrollTop = container.scrollHeight;
+      }
     }
-  }, [messages, hasInitialLoad]);
+  }, [messages]);
 
   // Initialize WebSocket when expanded
   useEffect(() => {
@@ -90,7 +95,6 @@ export default function Chatroom() {
                 }));
                 console.log('Loaded initial messages:', formattedMessages);
                 setMessages(formattedMessages);
-                setHasInitialLoad(true);
               }
             })
             .catch(console.error);
@@ -214,7 +218,11 @@ export default function Chatroom() {
             </div>
           </div>
           
-          <div className="h-64 overflow-y-auto theme-border border p-2 bg-white text-xs mb-3" id="chat-messages">
+          <div 
+            ref={chatContainerRef}
+            className="h-64 overflow-y-auto theme-border border p-2 bg-white text-xs mb-3" 
+            id="chat-messages"
+          >
             <div className="space-y-2">
               {messages.length === 0 && (
                 <div className="text-gray-500 text-center py-4">
