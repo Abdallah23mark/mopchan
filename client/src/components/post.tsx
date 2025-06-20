@@ -52,7 +52,7 @@ function formatContentForDisplay(content: any, isAdminPost?: boolean, showPrevie
                 }
               }}
             >
-              &gt;&gt;No. {postId}
+              {part}
             </span>
           );
         } else if (part === '') {
