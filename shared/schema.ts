@@ -4,6 +4,7 @@ import { z } from "zod";
 
 export const threads = pgTable("threads", {
   id: serial("id").primaryKey(),
+  postNumber: integer("post_number").notNull(),
   subject: text("subject"),
   content: text("content").notNull(),
   imageUrl: text("image_url"),
@@ -21,6 +22,7 @@ export const threads = pgTable("threads", {
 export const posts = pgTable("posts", {
   id: serial("id").primaryKey(),
   threadId: integer("thread_id").notNull(),
+  postNumber: integer("post_number").notNull(),
   content: text("content").notNull(),
   imageUrl: text("image_url"),
   imageName: text("image_name"),
@@ -80,11 +82,13 @@ export const insertThreadSchema = createInsertSchema(threads).omit({
   bumpedAt: true,
   replyCount: true,
   imageCount: true,
+  postNumber: true,
 });
 
 export const insertPostSchema = createInsertSchema(posts).omit({
   id: true,
   createdAt: true,
+  postNumber: true,
 });
 
 export const insertUserSchema = createInsertSchema(users).omit({

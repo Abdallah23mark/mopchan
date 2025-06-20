@@ -61,7 +61,7 @@ export default function ThreadCard({ thread }: ThreadCardProps) {
               style={{ maxHeight: '200px' }}
               onError={(e) => {
                 const img = e.target as HTMLImageElement;
-                img.src = '/attached_assets/imagenotfound2_1750389230268.png';
+                img.src = '/attached_assets/imagenotfound3_1750389506282.png';
                 img.onError = null; // Prevent infinite loop
               }}
             />
@@ -72,6 +72,9 @@ export default function ThreadCard({ thread }: ThreadCardProps) {
             {formatDate(thread.createdAt)}
           </div>
           <div className="text-xs text-gray-600 mb-1">
+            <span className="text-blue-600 font-bold mr-2">
+              No. {thread.postNumber || thread.id}
+            </span>
             <span className={`font-bold ${(thread as any).isAdminPost ? 'text-red-600 admin-name' : 'text-green-600'}`}>
               {(thread as any).name || "Anonymous"}
               {(thread as any).tripcode && (

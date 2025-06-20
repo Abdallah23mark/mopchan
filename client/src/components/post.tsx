@@ -229,7 +229,7 @@ export default function PostComponent({ post, isOP = false, subject, onQuote, on
             )}
           </span>
           <span className="text-gray-600 ml-2">{formatDate(post.createdAt)}</span>
-          <span className="text-blue-600 ml-2">No. {post.id}</span>
+          <span className="text-blue-600 ml-2">No. {post.postNumber || post.id}</span>
           <Button
             onClick={() => onQuote(post.id)}
             variant="outline"
@@ -305,7 +305,7 @@ export default function PostComponent({ post, isOP = false, subject, onQuote, on
             className="max-w-full max-h-full object-contain"
             onError={(e) => {
               const img = e.target as HTMLImageElement;
-              img.src = '/attached_assets/imagenotfound2_1750389230268.png';
+              img.src = '/attached_assets/imagenotfound3_1750389506282.png';
               img.onError = null; // Prevent infinite loop
             }}
           />

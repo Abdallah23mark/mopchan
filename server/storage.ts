@@ -67,8 +67,12 @@ export class DatabaseStorage implements IStorage {
       throw new Error("IP address is banned");
     }
     
+    // Get next global post number
+    const nextPostNumber = await this.getNextGlobalPostNumber();
+    
     const result = await db.insert(threads).values({
       ...insertThread,
+      postNumber: nextPostNumber,
       createdAt: new Date(),
       bumpedAt: new Date(),
       replyCount: 0,
@@ -115,8 +119,12 @@ export class DatabaseStorage implements IStorage {
       throw new Error("IP address is banned");
     }
     
+    // Get next global post number
+    const nextPostNumber = await this.getNextGlobalPostNumber();
+    
     const result = await db.insert(posts).values({
       ...insertPost,
+      postNumber: nextPostNumber,
       createdAt: new Date(),
     }).returning();
     
@@ -264,6 +272,14 @@ export class DatabaseStorage implements IStorage {
   async getAllUsers(): Promise<User[]> {
     const result = await db.select().from(users);
     return result;
+  }
+
+  // Helper method to get next global post number
+  private async getNextGlobalPostNumber(): Promise<number> {
+    const [maxThreadNumber] = await db.select({ max: sql<number>`COALESCE(MAX(post_number), 0)` }).from(threads);
+    const [maxPostNumber] = await db.select({ max: sql<number>`COALESCE(MAX(post_number), 0)` }).from(posts);
+    
+    return Math.max(maxThreadNumber.max || 0, maxPostNumber.max || 0) + 1;
   }
 
   async getChatMessages(limit: number = 50): Promise<ChatMessage[]> {
