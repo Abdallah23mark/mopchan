@@ -136,6 +136,7 @@ interface PostProps {
 export default function PostComponent({ post, isOP = false, subject, onQuote, onDelete }: PostProps) {
   const [showBanModal, setShowBanModal] = useState(false);
   const [expandedImage, setExpandedImage] = useState<string | null>(null);
+  const [expandedImageName, setExpandedImageName] = useState<string | null>(null);
   const [hoverPreview, setHoverPreview] = useState<{ postId: string; x: number; y: number; content: string; name: string; date: string; isAdminPost: boolean } | null>(null);
 
   const { isAdmin, isLoading: adminLoading, token: adminToken } = useAdmin();
@@ -153,8 +154,9 @@ export default function PostComponent({ post, isOP = false, subject, onQuote, on
     });
   };
 
-  const expandImage = (imageUrl: string) => {
+  const expandImage = (imageUrl: string, imageName?: string) => {
     setExpandedImage(imageUrl);
+    setExpandedImageName(imageName || null);
   };
 
   const showPostPreview = (postNumber: string, x: number, y: number) => {
@@ -209,7 +211,7 @@ export default function PostComponent({ post, isOP = false, subject, onQuote, on
     >
       {post.imageUrl && (
         <div className="flex-shrink-0">
-          {post.imageUrl.toLowerCase().endsWith('.webm') ? (
+          {post.imageName?.toLowerCase().endsWith('.webm') ? (
             <video
               src={post.imageUrl}
               className="image-thumb max-w-full md:max-w-xs border chan-border cursor-pointer"
@@ -217,14 +219,14 @@ export default function PostComponent({ post, isOP = false, subject, onQuote, on
               muted
               loop
               preload="metadata"
-              onClick={() => expandImage(post.imageUrl!)}
+              onClick={() => expandImage(post.imageUrl!, post.imageName)}
             />
           ) : (
             <img
               src={post.imageUrl}
               alt={post.imageName || "Post image"}
               className="image-thumb max-w-full md:max-w-xs border chan-border cursor-pointer"
-              onClick={() => expandImage(post.imageUrl!)}
+              onClick={() => expandImage(post.imageUrl!, post.imageName)}
             />
           )}
           {post.imageName && (
@@ -313,9 +315,12 @@ export default function PostComponent({ post, isOP = false, subject, onQuote, on
       {expandedImage && (
         <div 
           className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 cursor-pointer"
-          onClick={() => setExpandedImage(null)}
+          onClick={() => {
+            setExpandedImage(null);
+            setExpandedImageName(null);
+          }}
         >
-          {expandedImage.toLowerCase().endsWith('.webm') ? (
+          {expandedImageName?.toLowerCase().endsWith('.webm') ? (
             <video
               src={expandedImage}
               className="max-w-full max-h-full object-contain"

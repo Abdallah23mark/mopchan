@@ -54,7 +54,7 @@ export default function ThreadCard({ thread }: ThreadCardProps) {
       <div className="theme-bg-post theme-border border cursor-pointer hover:opacity-90 transition-colors" style={{ minHeight: '150px' }}>
         {thread.imageUrl && (
           <div className="relative">
-            {thread.imageUrl.toLowerCase().endsWith('.webm') ? (
+            {thread.imageName?.toLowerCase().endsWith('.webm') ? (
               <video
                 src={thread.imageUrl}
                 className="w-full object-contain cursor-pointer hover:opacity-80"
