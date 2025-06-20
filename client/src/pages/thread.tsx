@@ -86,9 +86,18 @@ export default function ThreadPage() {
   const { thread, posts } = data;
 
   const handleQuote = (postId: number) => {
+    // Find the post to get its post number
+    let postNumber = postId;
+    if (thread.id === postId) {
+      postNumber = thread.postNumber || postId;
+    } else {
+      const post = data?.posts?.find(p => p.id === postId);
+      postNumber = post?.postNumber || postId;
+    }
+    
     // Store the quote in localStorage so the modal can pick it up
     const existingQuote = localStorage.getItem('pendingQuote') || '';
-    const newQuote = `>>No. ${postId}\n`;
+    const newQuote = `>>${postNumber}\n`;
     localStorage.setItem('pendingQuote', existingQuote + newQuote);
     
     // Trigger the quick reply modal
@@ -139,6 +148,7 @@ export default function ThreadPage() {
           post={{
             id: thread.id,
             threadId: thread.id,
+            postNumber: thread.postNumber,
             content: thread.content || "",
             imageUrl: thread.imageUrl,
             imageName: thread.imageName,

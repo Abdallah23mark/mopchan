@@ -80,10 +80,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.status(201).json(thread);
     } catch (error) {
+      console.error("Thread creation error:", error);
       if (error instanceof z.ZodError) {
         return res.status(400).json({ message: "Invalid thread data", errors: error.errors });
       }
-      res.status(500).json({ message: "Failed to create thread" });
+      res.status(500).json({ message: "Failed to create thread", error: error.message });
     }
   });
 
@@ -128,10 +129,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.status(201).json(post);
     } catch (error) {
+      console.error("Post creation error:", error);
       if (error instanceof z.ZodError) {
         return res.status(400).json({ message: "Invalid post data", errors: error.errors });
       }
-      res.status(500).json({ message: "Failed to create post" });
+      res.status(500).json({ message: "Failed to create post", error: error.message });
     }
   });
 
