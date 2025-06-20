@@ -435,7 +435,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
   
   wss.on('connection', (ws) => {
-    console.log('Client connected to chat');
+    console.log('Client connected to chat, total clients:', wss.clients.size);
     
     ws.on('message', async (data) => {
       try {
@@ -443,6 +443,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         if (messageData.type === 'chat_message') {
           const { username, message, tripcode } = messageData;
+          console.log('Received chat message:', { username, message, tripcode });
           
           // Validate message data
           const validatedData = insertChatMessageSchema.parse({
@@ -453,16 +454,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           // Save to database
           const savedMessage = await storage.createChatMessage(validatedData);
+          console.log('Saved message to database:', savedMessage);
           
           // Broadcast to all connected clients
           const broadcastData = {
             type: 'chat_message',
             message: savedMessage
           };
+          console.log('Broadcasting to', wss.clients.size, 'clients');
           
           wss.clients.forEach((client) => {
             if (client.readyState === WebSocket.OPEN) {
-              client.send(JSON.stringify(broadcastData));
+              try {
+                client.send(JSON.stringify(broadcastData));
+                console.log('Message broadcasted to client');
+              } catch (err) {
+                console.error('Error broadcasting to client:', err);
+              }
             }
           });
         }
@@ -476,7 +484,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
     
     ws.on('close', () => {
-      console.log('Client disconnected from chat');
+      console.log('Client disconnected from chat, remaining clients:', wss.clients.size);
     });
   });
 
