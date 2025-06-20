@@ -200,7 +200,7 @@ export default function PostComponent({ post, isOP = false, subject, onQuote, on
   return (
     <div 
       id={`post-${post.id}`}
-      className={`flex flex-col md:flex-row gap-4 p-2 ${isOP ? 'theme-bg-post' : 'theme-bg-reply'} transition-all duration-200`}
+      className={`flex flex-col md:flex-row gap-2 md:gap-4 p-2 md:p-4 ${isOP ? 'theme-bg-post' : 'theme-bg-reply'} transition-all duration-200 mobile-post`}
       data-post-id={post.id}
       data-post-number={post.postNumber || post.id}
       ref={(el) => {
@@ -210,16 +210,16 @@ export default function PostComponent({ post, isOP = false, subject, onQuote, on
       }}
     >
       {post.imageUrl && (
-        <div className="flex-shrink-0">
+        <div className="flex-shrink-0 mobile-post-image">
           {post.imageName?.toLowerCase().endsWith('.webm') ? (
             <video
               src={post.imageUrl}
-              className="image-thumb cursor-pointer"
+              className="image-thumb cursor-pointer w-full md:w-auto"
               muted
               loop
               preload="metadata"
               style={{ 
-                maxWidth: '250px', 
+                maxWidth: '100%', 
                 maxHeight: '250px',
                 width: 'auto', 
                 height: 'auto',
@@ -244,13 +244,13 @@ export default function PostComponent({ post, isOP = false, subject, onQuote, on
             <img
               src={post.imageUrl}
               alt={post.imageName || "Post image"}
-              className="image-thumb max-w-full md:max-w-xs border chan-border cursor-pointer"
+              className="image-thumb w-full md:max-w-xs border chan-border cursor-pointer"
               onClick={() => expandImage(post.imageUrl!, post.imageName)}
             />
           )}
           {post.imageName && (
             <div 
-              className="text-xs text-gray-600 mt-1 w-[250px] cursor-help truncate"
+              className="text-xs text-gray-600 mt-1 w-full md:w-[250px] cursor-help truncate"
               title={post.imageName}
             >
               {post.imageName.length > 30 ? post.imageName.substring(0, 30) + '...' : post.imageName}
