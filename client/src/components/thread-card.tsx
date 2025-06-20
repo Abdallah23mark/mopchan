@@ -53,12 +53,12 @@ export default function ThreadCard({ thread }: ThreadCardProps) {
     <Link href={`/thread/${thread.id}`}>
       <div className="theme-bg-post theme-border border cursor-pointer hover:opacity-90 transition-colors" style={{ minHeight: '150px' }}>
         {thread.imageUrl && (
-          <div className="relative">
+          <div className="relative flex justify-center items-center" style={{ minHeight: '120px' }}>
             {thread.imageName?.toLowerCase().endsWith('.webm') ? (
               <video
                 src={thread.imageUrl}
-                className="w-full object-contain cursor-pointer hover:opacity-80"
-                style={{ maxHeight: '200px', width: 'auto', height: 'auto' }}
+                className="object-contain cursor-pointer hover:opacity-80 mx-auto"
+                style={{ maxHeight: '200px', maxWidth: '100%', width: 'auto', height: 'auto' }}
                 muted
                 preload="metadata"
                 onMouseEnter={(e) => {
@@ -75,8 +75,8 @@ export default function ThreadCard({ thread }: ThreadCardProps) {
               <img
                 src={thread.imageUrl}
                 alt={thread.imageName || "Thread image"}
-                className="w-full object-contain cursor-pointer hover:opacity-80"
-                style={{ maxHeight: '200px' }}
+                className="object-contain cursor-pointer hover:opacity-80 mx-auto"
+                style={{ maxHeight: '200px', maxWidth: '100%' }}
                 onError={(e) => {
                   const img = e.target as HTMLImageElement;
                   img.src = '/attached_assets/imagenotfound3_1750389506282.png';
