@@ -196,12 +196,12 @@ export default function Chatroom() {
     return message.split('\n').map((line, index) => {
       if (line.startsWith('>')) {
         return (
-          <div key={index} className="theme-text-green">
+          <div key={index} className="theme-text-green break-words">
             {line}
           </div>
         );
       }
-      return <div key={index}>{line || "\u00A0"}</div>;
+      return <div key={index} className="break-words">{line || "\u00A0"}</div>;
     });
   };
 
@@ -216,7 +216,7 @@ export default function Chatroom() {
       </button>
       
       {isExpanded && (
-        <div className="mt-4 theme-bg-post theme-border border p-4 w-full max-w-4xl mx-auto">
+        <div className="mt-4 theme-bg-post theme-border border p-4 w-full max-w-2xl">
           <div className="mb-2">
             <div className="font-bold text-sm theme-text-main mb-1">Mopchan Chatroom</div>
             <div className="text-xs text-gray-600">
@@ -242,13 +242,13 @@ export default function Chatroom() {
               {messages.map((msg) => (
                 <div key={msg.id} className="flex flex-col gap-1 text-left">
                   <div className="flex gap-2 items-baseline">
-                    <span className="font-bold theme-text-green">
+                    <span className="font-bold theme-text-green flex-shrink-0">
                       {msg.username}
                       {msg.tripcode && <span className="theme-text-quote"> !{msg.tripcode}</span>}
                     </span>
-                    <span className="text-gray-600 text-xs">{formatTime(msg.timestamp)}</span>
+                    <span className="text-gray-600 text-xs flex-shrink-0">{formatTime(msg.timestamp)}</span>
                   </div>
-                  <div className="ml-2">
+                  <div className="ml-2 break-words overflow-wrap-anywhere">
                     {formatMessage(msg.message)}
                   </div>
                 </div>
@@ -264,7 +264,7 @@ export default function Chatroom() {
                 onChange={(e) => setInputMessage(e.target.value)}
                 placeholder="Type message... (add #password for tripcode)"
                 className="text-xs theme-border"
-                maxLength={500}
+                maxLength={2000}
               />
               <Button 
                 type="submit" 
