@@ -42,8 +42,16 @@ export default function Chatroom() {
     }
   }, []);
 
+  // Only auto-scroll if user is near the bottom of the chat
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    const chatContainer = messagesEndRef.current?.parentElement;
+    if (!chatContainer) return;
+
+    const isNearBottom = chatContainer.scrollHeight - chatContainer.scrollTop - chatContainer.clientHeight < 50;
+    
+    if (isNearBottom) {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
   }, [messages]);
 
   // Initialize WebSocket when expanded
@@ -208,7 +216,7 @@ export default function Chatroom() {
             </div>
           </div>
           
-          <div className="h-64 overflow-y-auto theme-border border p-2 bg-white text-xs mb-3">
+          <div className="h-64 overflow-y-auto theme-border border p-2 bg-white text-xs mb-3" id="chat-messages">
             <div className="space-y-2">
               {messages.length === 0 && (
                 <div className="text-gray-500 text-center py-4">
