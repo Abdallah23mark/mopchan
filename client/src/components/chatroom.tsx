@@ -48,69 +48,95 @@ export default function Chatroom() {
 
   // Initialize WebSocket when expanded
   useEffect(() => {
-    if (!isExpanded) return;
+    if (!isExpanded) {
+      if (socket) {
+        socket.close();
+        setSocket(null);
+      }
+      return;
+    }
+
+    // Only create WebSocket if we don't have one already
+    if (socket && socket.readyState === WebSocket.OPEN) {
+      return;
+    }
 
     const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
     const wsUrl = `${protocol}//${window.location.host}/ws`;
+    
+    console.log('Creating WebSocket connection to:', wsUrl);
     
     try {
       const ws = new WebSocket(wsUrl);
       
       ws.onopen = () => {
-        console.log('Connected to chat');
+        console.log('✓ WebSocket connected successfully');
         setSocket(ws);
-        // Fetch initial messages
-        fetch("/api/chat/messages")
-          .then(res => res.json())
-          .then(data => {
-            if (Array.isArray(data)) {
-              const formattedMessages = data.map(msg => ({
-                ...msg,
-                timestamp: new Date(msg.createdAt)
-              }));
-              setMessages(formattedMessages);
-            }
-          })
-          .catch(console.error);
+        
+        // Fetch initial messages only once when connecting
+        if (messages.length === 0) {
+          fetch("/api/chat/messages")
+            .then(res => res.json())
+            .then(data => {
+              if (Array.isArray(data)) {
+                const formattedMessages = data.map(msg => ({
+                  ...msg,
+                  timestamp: new Date(msg.createdAt)
+                }));
+                console.log('Loaded initial messages:', formattedMessages);
+                setMessages(formattedMessages);
+              }
+            })
+            .catch(console.error);
+        }
+        
+        // Send a ping to confirm connection
+        ws.send(JSON.stringify({ type: 'ping' }));
       };
       
       ws.onmessage = (event) => {
         try {
-          console.log('Received WebSocket message:', event.data);
+          console.log('📨 Received WebSocket message:', event.data);
           const data = JSON.parse(event.data);
-          console.log('Parsed WebSocket data:', data);
+          console.log('📋 Parsed data:', data);
+          
           if (data.type === 'chat_message' && data.message) {
             const newMsg = {
               ...data.message,
               timestamp: new Date(data.message.createdAt)
             };
-            console.log('Adding new message to state:', newMsg);
-            setMessages(prev => {
-              console.log('Current messages before update:', prev);
-              const updated = [...prev, newMsg];
-              console.log('Updated messages after add:', updated);
-              return updated;
+            console.log('💬 Adding new chat message:', newMsg);
+            
+            setMessages(prevMessages => {
+              console.log('Current message count:', prevMessages.length);
+              const updatedMessages = [...prevMessages, newMsg];
+              console.log('New message count:', updatedMessages.length);
+              return updatedMessages;
             });
+          } else if (data.type === 'pong') {
+            console.log('🏓 Received pong from server');
           }
         } catch (err) {
-          console.error("Error parsing message:", err);
+          console.error("❌ Error parsing WebSocket message:", err);
         }
       };
       
-      ws.onclose = () => {
-        console.log('Disconnected from chat');
+      ws.onclose = (event) => {
+        console.log('🔌 WebSocket disconnected:', event.code, event.reason);
         setSocket(null);
       };
       
       ws.onerror = (error) => {
-        console.error('WebSocket error:', error);
+        console.error('💥 WebSocket error:', error);
+        setSocket(null);
       };
       
       return () => {
+        console.log('🧹 Cleaning up WebSocket connection');
         ws.close();
       };
     } catch (err) {
-      console.error("Failed to create WebSocket:", err);
+      console.error("❌ Failed to create WebSocket:", err);
     }
   }, [isExpanded]);
 

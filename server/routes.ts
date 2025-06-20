@@ -441,7 +441,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       try {
         const messageData = JSON.parse(data.toString());
         
-        if (messageData.type === 'chat_message') {
+        if (messageData.type === 'ping') {
+          // Respond to ping with pong
+          ws.send(JSON.stringify({ type: 'pong' }));
+        } else if (messageData.type === 'chat_message') {
           const { username, message, tripcode } = messageData;
           console.log('Received chat message:', { username, message, tripcode });
           
