@@ -12,16 +12,16 @@ export default function ThreadCard({ thread }: ThreadCardProps) {
     return truncated.split('\n').map((line, index) => {
       if (line.startsWith('>')) {
         if (line.match(/^>>(No\. )?\d+$/)) {
-          // Post quote - red maroon color
+          // Post quote - blue color like main posts
           return (
-            <div key={index} className="theme-text-quote">
+            <div key={index} className="text-blue-600">
               {line}
             </div>
           );
         } else {
           // Greentext - green color
           return (
-            <div key={index} className="text-green-700">
+            <div key={index} className="text-green-600">
               {line}
             </div>
           );
@@ -84,7 +84,7 @@ export default function ThreadCard({ thread }: ThreadCardProps) {
           <div 
             className={`mb-2 break-words leading-relaxed ${(thread as any).isAdminPost ? 'text-red-600 font-medium' : 'text-black'}`}
           >
-            {String(thread.content || '')}
+            {formatContent(thread.content || '')}
           </div>
           <div className="text-gray-600 text-xs">
             R: {thread.replyCount} / I: {thread.imageUrl ? thread.imageCount + 1 : thread.imageCount}
