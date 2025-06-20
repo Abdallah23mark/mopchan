@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Switch, Route } from "wouter";
+import { Switch, Route, useLocation } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -16,12 +16,15 @@ import AdminPanel from "@/components/admin-panel";
 import type { User } from "@shared/schema";
 
 function App() {
+  const [location] = useLocation();
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState<"bump" | "reply" | "time">("bump");
   const [showAdminLogin, setShowAdminLogin] = useState(false);
   const [showAdminPanel, setShowAdminPanel] = useState(false);
   const [adminUser, setAdminUser] = useState<User | null>(null);
   const [adminToken, setAdminToken] = useState<string | null>(null);
+  
+  const isInCatalog = location === "/";
 
   // Check for existing admin session on load
   useEffect(() => {
@@ -132,7 +135,9 @@ function App() {
                 </select>
               </div>
               
-              <div className="font-bold absolute left-1/2 transform -translate-x-1/2">catalog</div>
+              {isInCatalog && (
+                <div className="font-bold absolute left-1/2 transform -translate-x-1/2">catalog</div>
+              )}
               
               <div className="flex gap-2 items-center">
                 <button 
