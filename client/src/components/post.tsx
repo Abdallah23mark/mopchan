@@ -35,7 +35,7 @@ function formatContentForDisplay(content: any, isAdminPost?: boolean, showPrevie
                 if (element) {
                   element.scrollIntoView({ behavior: 'smooth', block: 'center' });
                   element.style.transition = 'background-color 0.3s ease';
-                  element.style.backgroundColor = '#fef3c7';
+                  element.style.backgroundColor = '#fde047';
                   setTimeout(() => {
                     element.style.backgroundColor = '';
                   }, 2000);
