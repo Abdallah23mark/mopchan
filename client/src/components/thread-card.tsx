@@ -59,6 +59,14 @@ export default function ThreadCard({ thread }: ThreadCardProps) {
               alt={thread.imageName || "Thread image"}
               className="w-full object-contain cursor-pointer hover:opacity-80"
               style={{ maxHeight: '200px' }}
+              onError={(e) => {
+                const img = e.target as HTMLImageElement;
+                img.style.display = 'none';
+                const container = img.parentElement;
+                if (container) {
+                  container.innerHTML = '<div class="w-full h-48 bg-gray-200 flex items-center justify-center text-xs text-gray-500">Image not available</div>';
+                }
+              }}
             />
           </div>
         )}
