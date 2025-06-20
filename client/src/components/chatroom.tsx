@@ -34,6 +34,7 @@ export default function Chatroom() {
   const [username, setUsername] = useState("");
   const [tripcode, setTripcode] = useState("");
   const [socket, setSocket] = useState<WebSocket | null>(null);
+  const [isFirstLoad, setIsFirstLoad] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
 
@@ -47,18 +48,29 @@ export default function Chatroom() {
   useEffect(() => {
     if (chatContainerRef.current && messages.length > 0) {
       const container = chatContainerRef.current;
-      const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 100;
       
-      // Always scroll to bottom for initial load or if user is near bottom
-      if (isNearBottom || messages.length <= 10) { // Initial load or few messages
+      // Always scroll to bottom on first load
+      if (isFirstLoad) {
+        setTimeout(() => {
+          if (container) {
+            container.scrollTop = container.scrollHeight;
+            setIsFirstLoad(false);
+          }
+        }, 100);
+        return;
+      }
+      
+      // For subsequent messages, only scroll if user is near bottom
+      const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 100;
+      if (isNearBottom) {
         setTimeout(() => {
           if (container) {
             container.scrollTop = container.scrollHeight;
           }
-        }, 50); // Small delay to ensure DOM is updated
+        }, 50);
       }
     }
-  }, [messages]);
+  }, [messages, isFirstLoad]);
 
   // Initialize WebSocket when expanded
   useEffect(() => {
@@ -67,6 +79,7 @@ export default function Chatroom() {
         socket.close();
         setSocket(null);
       }
+      setIsFirstLoad(true); // Reset first load when closing
       return;
     }
 
@@ -99,12 +112,6 @@ export default function Chatroom() {
                 }));
                 console.log('Loaded initial messages:', formattedMessages);
                 setMessages(formattedMessages);
-                // Ensure scroll to bottom after messages load
-                setTimeout(() => {
-                  if (chatContainerRef.current) {
-                    chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
-                  }
-                }, 100);
               }
             })
             .catch(console.error);
