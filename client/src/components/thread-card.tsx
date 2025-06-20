@@ -59,11 +59,6 @@ export default function ThreadCard({ thread }: ThreadCardProps) {
               alt={thread.imageName || "Thread image"}
               className="w-full object-contain cursor-pointer hover:opacity-80"
               style={{ maxHeight: '200px' }}
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                window.open(thread.imageUrl!, '_blank');
-              }}
             />
           </div>
         )}
