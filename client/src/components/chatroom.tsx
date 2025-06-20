@@ -1,22 +1,154 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ChevronDown, ChevronUp } from "lucide-react";
 
+interface ChatMessage {
+  id: number;
+  username: string;
+  message: string;
+  timestamp: Date;
+  tripcode?: string;
+}
+
+const generateUsername = () => {
+  const adjectives = ['Anonymous', 'Lurker', 'Anon', 'Poster', 'Visitor', 'Guest', 'User', 'Peasant', 'Newfag', 'Oldfag'];
+  const numbers = Math.floor(Math.random() * 9999);
+  return `${adjectives[Math.floor(Math.random() * adjectives.length)]}${numbers}`;
+};
+
+const generateTripcode = (password: string): string => {
+  let hash = 0;
+  for (let i = 0; i < password.length; i++) {
+    const char = password.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash;
+  }
+  return Math.abs(hash).toString(36).slice(0, 8).toUpperCase();
+};
+
 export default function Chatroom() {
   const [isExpanded, setIsExpanded] = useState(false);
-  const [messages, setMessages] = useState<string[]>([]);
-  const [newMessage, setNewMessage] = useState("");
-  const [nameField, setNameField] = useState("");
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [inputMessage, setInputMessage] = useState("");
+  const [username, setUsername] = useState("");
+  const [tripcode, setTripcode] = useState("");
+  const [socket, setSocket] = useState<WebSocket | null>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newMessage.trim()) return;
+  useEffect(() => {
+    if (!username) {
+      setUsername(generateUsername());
+    }
+  }, []);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  // Initialize WebSocket when expanded
+  useEffect(() => {
+    if (!isExpanded) return;
+
+    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+    const wsUrl = `${protocol}//${window.location.host}/ws`;
     
-    const name = nameField || "Anonymous";
-    const messageText = `${name}: ${newMessage}`;
-    setMessages(prev => [...prev, messageText]);
-    setNewMessage("");
+    try {
+      const ws = new WebSocket(wsUrl);
+      
+      ws.onopen = () => {
+        console.log('Connected to chat');
+        setSocket(ws);
+        // Fetch initial messages
+        fetch("/api/chat/messages")
+          .then(res => res.json())
+          .then(data => {
+            if (Array.isArray(data)) {
+              const formattedMessages = data.map(msg => ({
+                ...msg,
+                timestamp: new Date(msg.createdAt)
+              }));
+              setMessages(formattedMessages);
+            }
+          })
+          .catch(console.error);
+      };
+      
+      ws.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          if (data.type === 'chat_message' && data.message) {
+            const newMsg = {
+              ...data.message,
+              timestamp: new Date(data.message.createdAt)
+            };
+            setMessages(prev => [...prev, newMsg]);
+          }
+        } catch (err) {
+          console.error("Error parsing message:", err);
+        }
+      };
+      
+      ws.onclose = () => {
+        console.log('Disconnected from chat');
+        setSocket(null);
+      };
+      
+      ws.onerror = (error) => {
+        console.error('WebSocket error:', error);
+      };
+      
+      return () => {
+        ws.close();
+      };
+    } catch (err) {
+      console.error("Failed to create WebSocket:", err);
+    }
+  }, [isExpanded]);
+
+  const handleSendMessage = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (inputMessage.trim() === "" || !socket) return;
+
+    let messageText = inputMessage.trim();
+    let userTripcode = "";
+
+    // Check for tripcode in message (format: message#password)
+    const tripcodeMatch = messageText.match(/^(.*)#(.+)$/);
+    if (tripcodeMatch) {
+      messageText = tripcodeMatch[1].trim();
+      const password = tripcodeMatch[2];
+      userTripcode = generateTripcode(password);
+    }
+
+    try {
+      socket.send(JSON.stringify({
+        type: 'chat_message',
+        username: username,
+        message: messageText,
+        tripcode: userTripcode || null
+      }));
+      setInputMessage("");
+    } catch (err) {
+      console.error("Failed to send message:", err);
+    }
+  };
+
+  const formatTime = (date: Date) => {
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  };
+
+  const formatMessage = (message: string) => {
+    return message.split('\n').map((line, index) => {
+      if (line.startsWith('>')) {
+        return (
+          <div key={index} className="theme-text-green">
+            {line}
+          </div>
+        );
+      }
+      return <div key={index}>{line || "\u00A0"}</div>;
+    });
   };
 
   return (
@@ -30,48 +162,56 @@ export default function Chatroom() {
       </button>
       
       {isExpanded && (
-        <div className="mt-4 bg-gray-50 border p-4 w-full max-w-4xl mx-auto">
+        <div className="mt-4 theme-bg-post theme-border border p-4 w-full max-w-4xl mx-auto">
           <div className="mb-2">
-            <div className="font-bold text-sm mb-1">Mopchan Chatroom</div>
+            <div className="font-bold text-sm theme-text-main mb-1">Mopchan Chatroom</div>
             <div className="text-xs text-gray-600">
-              Local chat (temporary until real-time is stable)
+              Your username: <span className="font-bold theme-text-green">{username}</span>
+              {tripcode && <span className="theme-text-quote"> !{tripcode}</span>}
+            </div>
+            <div className="text-xs text-gray-500">
+              Add tripcode: Type your message followed by #password
             </div>
           </div>
           
-          <div className="h-64 overflow-y-auto border p-2 bg-white text-xs mb-3">
+          <div className="h-64 overflow-y-auto theme-border border p-2 bg-white text-xs mb-3">
             <div className="space-y-2">
               {messages.length === 0 && (
                 <div className="text-gray-500 text-center py-4">
                   No messages yet. Start the conversation!
                 </div>
               )}
-              {messages.map((msg, index) => (
-                <div key={index} className="text-left">
-                  {msg}
+              {messages.map((msg) => (
+                <div key={msg.id} className="flex flex-col gap-1 text-left">
+                  <div className="flex gap-2 items-baseline">
+                    <span className="font-bold theme-text-green">
+                      {msg.username}
+                      {msg.tripcode && <span className="theme-text-quote"> !{msg.tripcode}</span>}
+                    </span>
+                    <span className="text-gray-600 text-xs">{formatTime(msg.timestamp)}</span>
+                  </div>
+                  <div className="ml-2">
+                    {formatMessage(msg.message)}
+                  </div>
                 </div>
               ))}
+              <div ref={messagesEndRef} />
             </div>
           </div>
           
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={handleSendMessage}>
             <div className="flex gap-2">
               <Input
-                value={nameField}
-                onChange={(e) => setNameField(e.target.value)}
-                placeholder="Name"
-                className="w-24 text-xs"
-              />
-              <Input
-                value={newMessage}
-                onChange={(e) => setNewMessage(e.target.value)}
-                placeholder="Type message..."
-                className="flex-1 text-xs"
+                value={inputMessage}
+                onChange={(e) => setInputMessage(e.target.value)}
+                placeholder="Type message... (add #password for tripcode)"
+                className="text-xs theme-border"
                 maxLength={500}
               />
               <Button 
                 type="submit" 
-                className="bg-white border text-xs hover:bg-gray-100 text-black"
-                disabled={!newMessage.trim()}
+                className="bg-white theme-border border text-xs hover:bg-gray-100 theme-text-main"
+                disabled={!inputMessage.trim()}
               >
                 Send
               </Button>
