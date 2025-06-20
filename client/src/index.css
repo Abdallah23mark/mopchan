@@ -262,8 +262,8 @@ video.image-thumb {
   
   /* Mobile chatroom */
   .mobile-chatroom {
-    height: 200px;
-    margin: 8px;
+    width: 100%;
+    max-width: 100%;
   }
   
   /* Mobile admin controls */
