@@ -154,9 +154,9 @@ export default function PostComponent({ post, isOP = false, subject, onQuote, on
     setExpandedImage(imageUrl);
   };
 
-  const showPostPreview = (postId: string, x: number, y: number) => {
-    // Find post data from DOM safely
-    const postElement = document.querySelector(`[data-post-id="${postId}"]`);
+  const showPostPreview = (postNumber: string, x: number, y: number) => {
+    // Find post by post number instead of post ID
+    const postElement = document.querySelector(`[data-post-number="${postNumber}"]`);
     if (postElement) {
       const contentElement = postElement.querySelector('.post-content');
       const nameElement = postElement.querySelector('.post-name');
@@ -168,7 +168,7 @@ export default function PostComponent({ post, isOP = false, subject, onQuote, on
       const isAdminPost = postData?.isAdminPost || false;
       
       setHoverPreview({
-        postId,
+        postId: postNumber,
         x: Math.min(x, window.innerWidth - 400),
         y: Math.min(y, window.innerHeight - 300),
         content: rawContent,
@@ -197,6 +197,7 @@ export default function PostComponent({ post, isOP = false, subject, onQuote, on
       id={`post-${post.id}`}
       className={`flex flex-col md:flex-row gap-4 p-2 ${isOP ? 'theme-bg-post' : 'theme-bg-reply'} transition-all duration-200`}
       data-post-id={post.id}
+      data-post-number={post.postNumber || post.id}
       ref={(el) => {
         if (el) {
           (el as any).__postData = post;
