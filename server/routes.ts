@@ -4,8 +4,9 @@ import { createServer, type Server } from "http";
 import multer from "multer";
 import path from "path";
 import { storage } from "./storage";
-import { insertThreadSchema, insertPostSchema } from "@shared/schema";
+import { insertThreadSchema, insertPostSchema, insertChatMessageSchema } from "@shared/schema";
 import { z } from "zod";
+import { WebSocketServer, WebSocket } from "ws";
 
 // Configure multer for file uploads
 const upload = multer({
@@ -417,6 +418,67 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Chat routes
+  app.get("/api/chat/messages", async (req, res) => {
+    try {
+      const messages = await storage.getChatMessages(50);
+      res.json(messages.reverse()); // Reverse to show oldest first
+    } catch (error) {
+      console.error("Error fetching chat messages:", error);
+      res.status(500).json({ message: "Failed to fetch chat messages" });
+    }
+  });
+
   const httpServer = createServer(app);
+
+  // WebSocket server for real-time chat
+  const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
+  
+  wss.on('connection', (ws) => {
+    console.log('Client connected to chat');
+    
+    ws.on('message', async (data) => {
+      try {
+        const messageData = JSON.parse(data.toString());
+        
+        if (messageData.type === 'chat_message') {
+          const { username, message, tripcode } = messageData;
+          
+          // Validate message data
+          const validatedData = insertChatMessageSchema.parse({
+            username: username || "Anonymous",
+            message: message.trim(),
+            tripcode: tripcode || null
+          });
+          
+          // Save to database
+          const savedMessage = await storage.createChatMessage(validatedData);
+          
+          // Broadcast to all connected clients
+          const broadcastData = {
+            type: 'chat_message',
+            message: savedMessage
+          };
+          
+          wss.clients.forEach((client) => {
+            if (client.readyState === WebSocket.OPEN) {
+              client.send(JSON.stringify(broadcastData));
+            }
+          });
+        }
+      } catch (error) {
+        console.error('Error handling WebSocket message:', error);
+        ws.send(JSON.stringify({ 
+          type: 'error', 
+          message: 'Failed to process message' 
+        }));
+      }
+    });
+    
+    ws.on('close', () => {
+      console.log('Client disconnected from chat');
+    });
+  });
+
   return httpServer;
 }

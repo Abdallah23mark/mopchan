@@ -1,15 +1,10 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { parseNameField } from "@/utils/tripcode";
+import { useQuery } from "@tanstack/react-query";
+import type { ChatMessage } from "@shared/schema";
 import { ChevronDown, ChevronUp } from "lucide-react";
-
-interface ChatMessage {
-  id: number;
-  username: string;
-  message: string;
-  timestamp: Date;
-  tripcode?: string;
-}
 
 const generateUsername = () => {
   const adjectives = ['Anonymous', 'Lurker', 'Anon', 'Poster', 'Visitor', 'Guest', 'User', 'Peasant', 'Newfag', 'Oldfag'];
@@ -31,22 +26,69 @@ const generateTripcode = (password: string): string => {
 export default function Chatroom() {
   const [isExpanded, setIsExpanded] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [inputMessage, setInputMessage] = useState("");
-  const [username, setUsername] = useState("");
-  const [tripcode, setTripcode] = useState("");
+  const [newMessage, setNewMessage] = useState("");
+  const [nameField, setNameField] = useState("");
+  const [socket, setSocket] = useState<WebSocket | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (!username) {
-      setUsername(generateUsername());
+  // Fetch initial messages
+  const { data: initialMessages } = useQuery({
+    queryKey: ["/api/chat/messages"],
+    queryFn: async () => {
+      const res = await fetch("/api/chat/messages");
+      if (!res.ok) throw new Error("Failed to fetch messages");
+      return res.json();
     }
+  });
+
+  // Initialize WebSocket connection
+  useEffect(() => {
+    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+    const wsUrl = `${protocol}//${window.location.host}/ws`;
+    const ws = new WebSocket(wsUrl);
+    
+    ws.onopen = () => {
+      console.log('Connected to chat');
+      setSocket(ws);
+    };
+    
+    ws.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      if (data.type === 'chat_message') {
+        setMessages(prev => [...prev, data.message]);
+      }
+    };
+    
+    ws.onclose = () => {
+      console.log('Disconnected from chat');
+      setSocket(null);
+    };
+    
+    ws.onerror = (error) => {
+      console.error('WebSocket error:', error);
+    };
+    
+    return () => {
+      ws.close();
+    };
   }, []);
 
+  // Set initial messages when loaded
   useEffect(() => {
+    if (initialMessages) {
+      setMessages(initialMessages);
+    }
+  }, [initialMessages]);
+
+  const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
   }, [messages]);
 
-  const handleSendMessage = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!inputMessage.trim()) return;
 

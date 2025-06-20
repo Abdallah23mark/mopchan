@@ -66,6 +66,14 @@ export const sessions = pgTable("sessions", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+export const chatMessages = pgTable("chat_messages", {
+  id: serial("id").primaryKey(),
+  username: varchar("username").notNull(),
+  message: text("message").notNull(),
+  tripcode: varchar("tripcode"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 export const insertThreadSchema = createInsertSchema(threads).omit({
   id: true,
   createdAt: true,
@@ -89,6 +97,11 @@ export const insertIpBanSchema = createInsertSchema(ipBans).omit({
   createdAt: true,
 });
 
+export const insertChatMessageSchema = createInsertSchema(chatMessages).omit({
+  id: true,
+  createdAt: true,
+});
+
 export type InsertThread = z.infer<typeof insertThreadSchema>;
 export type Thread = typeof threads.$inferSelect;
 export type InsertPost = z.infer<typeof insertPostSchema>;
@@ -99,3 +112,5 @@ export type IpBan = typeof ipBans.$inferSelect;
 export type InsertIpBan = z.infer<typeof insertIpBanSchema>;
 export type ThreadPin = typeof threadPins.$inferSelect;
 export type Session = typeof sessions.$inferSelect;
+export type ChatMessage = typeof chatMessages.$inferSelect;
+export type InsertChatMessage = z.infer<typeof insertChatMessageSchema>;

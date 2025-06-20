@@ -1,6 +1,6 @@
-import type { Thread, InsertThread, Post, InsertPost, User, InsertUser, IpBan, InsertIpBan, ThreadPin } from "@shared/schema";
+import type { Thread, InsertThread, Post, InsertPost, User, InsertUser, IpBan, InsertIpBan, ThreadPin, ChatMessage, InsertChatMessage } from "@shared/schema";
 import { db } from "./db";
-import { threads, posts, users, ipBans, threadPins, sessions } from "@shared/schema";
+import { threads, posts, users, ipBans, threadPins, sessions, chatMessages } from "@shared/schema";
 import { eq, desc, and } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
@@ -40,6 +40,10 @@ export interface IStorage {
   // Statistics
   getDailyStats(): Promise<any[]>;
   getAllTimeStats(): Promise<any>;
+  
+  // Chat operations
+  getChatMessages(limit?: number): Promise<ChatMessage[]>;
+  createChatMessage(message: InsertChatMessage): Promise<ChatMessage>;
   
   // Debug helper
   getAllUsers?(): Promise<User[]>;
@@ -260,6 +264,22 @@ export class DatabaseStorage implements IStorage {
   async getAllUsers(): Promise<User[]> {
     const result = await db.select().from(users);
     return result;
+  }
+
+  async getChatMessages(limit: number = 50): Promise<ChatMessage[]> {
+    return await db
+      .select()
+      .from(chatMessages)
+      .orderBy(desc(chatMessages.createdAt))
+      .limit(limit);
+  }
+
+  async createChatMessage(insertMessage: InsertChatMessage): Promise<ChatMessage> {
+    const [message] = await db
+      .insert(chatMessages)
+      .values(insertMessage)
+      .returning();
+    return message;
   }
 }
 
