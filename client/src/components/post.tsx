@@ -231,7 +231,7 @@ export default function PostComponent({ post, isOP = false, subject, onQuote, on
           <span className="text-gray-600 ml-2">{formatDate(post.createdAt)}</span>
           <span className="text-blue-600 ml-2">No. {post.postNumber || post.id}</span>
           <Button
-            onClick={() => onQuote(post.id)}
+            onClick={() => onQuote(post.postNumber || post.id)}
             variant="outline"
             size="sm"
             className="ml-2 text-xs bg-gray-200 px-1 hover:bg-gray-300 h-auto py-0"
