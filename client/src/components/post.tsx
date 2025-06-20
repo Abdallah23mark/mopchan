@@ -94,7 +94,7 @@ interface PostProps {
 export default function PostComponent({ post, isOP = false, subject, onQuote, onDelete }: PostProps) {
   const [showBanModal, setShowBanModal] = useState(false);
   const [expandedImage, setExpandedImage] = useState<string | null>(null);
-  const [hoverPreview, setHoverPreview] = useState<{ postId: string; x: number; y: number; content: string; name: string; date: string } | null>(null);
+  const [hoverPreview, setHoverPreview] = useState<{ postId: string; x: number; y: number; content: string; name: string; date: string; isAdminPost: boolean } | null>(null);
 
   const { isAdmin, isLoading: adminLoading, token: adminToken } = useAdmin();
 
@@ -126,12 +126,14 @@ export default function PostComponent({ post, isOP = false, subject, onQuote, on
       // Get the raw content from the post data
       const postData = (postElement as any).__postData;
       const rawContent = postData?.content || contentElement?.textContent || 'Post content not found';
+      const isAdminPost = postData?.isAdminPost || false;
       
       setHoverPreview({
         postId,
         x: Math.min(x, window.innerWidth - 400),
         y: Math.min(y, window.innerHeight - 300),
         content: rawContent,
+        isAdminPost,
         name: nameElement?.textContent || 'Anonymous',
         date: dateElement?.textContent || ''
       });
@@ -156,6 +158,11 @@ export default function PostComponent({ post, isOP = false, subject, onQuote, on
       id={`post-${post.id}`}
       className={`flex flex-col md:flex-row gap-4 p-2 ${isOP ? 'theme-bg-post' : 'theme-bg-reply'} transition-all duration-200`}
       data-post-id={post.id}
+      ref={(el) => {
+        if (el) {
+          (el as any).__postData = post;
+        }
+      }}
     >
       {post.imageUrl && (
         <div className="flex-shrink-0">
@@ -235,12 +242,13 @@ export default function PostComponent({ post, isOP = false, subject, onQuote, on
             <span className="ml-2">{hoverPreview.date}</span>
             <span className="ml-2 text-blue-600">No. {hoverPreview.postId}</span>
           </div>
-          <div className="text-xs leading-relaxed whitespace-pre-wrap">
+          <div className={`text-xs leading-relaxed ${hoverPreview.isAdminPost ? 'text-red-600 font-bold' : ''}`}>
             {typeof hoverPreview.content === 'string' 
               ? formatContentForDisplay(
                   hoverPreview.content.length > 200 
                     ? hoverPreview.content.substring(0, 200) + '...' 
-                    : hoverPreview.content
+                    : hoverPreview.content,
+                  hoverPreview.isAdminPost
                 )
               : hoverPreview.content}
           </div>
