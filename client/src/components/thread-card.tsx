@@ -61,7 +61,15 @@ export default function ThreadCard({ thread }: ThreadCardProps) {
                 style={{ maxHeight: '200px', width: 'auto', height: 'auto' }}
                 muted
                 preload="metadata"
-                controls
+                onMouseEnter={(e) => {
+                  const video = e.target as HTMLVideoElement;
+                  video.play();
+                }}
+                onMouseLeave={(e) => {
+                  const video = e.target as HTMLVideoElement;
+                  video.pause();
+                  video.currentTime = 0;
+                }}
               />
             ) : (
               <img

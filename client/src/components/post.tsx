@@ -214,21 +214,28 @@ export default function PostComponent({ post, isOP = false, subject, onQuote, on
           {post.imageName?.toLowerCase().endsWith('.webm') ? (
             <video
               src={post.imageUrl}
-              className="image-thumb max-w-full md:max-w-xs border chan-border cursor-pointer"
-              controls
+              className="image-thumb cursor-pointer"
               muted
               loop
               preload="metadata"
               style={{ 
                 maxWidth: '250px', 
-                maxHeight: '250px', 
-                minWidth: '150px',
-                minHeight: '100px',
+                maxHeight: '250px',
                 width: 'auto', 
                 height: 'auto',
-                backgroundColor: '#000'
+                backgroundColor: '#000',
+                border: '1px solid #ccc'
               }}
               onClick={() => expandImage(post.imageUrl!, post.imageName)}
+              onMouseEnter={(e) => {
+                const video = e.target as HTMLVideoElement;
+                video.play();
+              }}
+              onMouseLeave={(e) => {
+                const video = e.target as HTMLVideoElement;
+                video.pause();
+                video.currentTime = 0;
+              }}
               onError={(e) => {
                 console.error('Video failed to load:', post.imageUrl);
               }}
@@ -242,8 +249,11 @@ export default function PostComponent({ post, isOP = false, subject, onQuote, on
             />
           )}
           {post.imageName && (
-            <div className="text-xs text-gray-600 mt-1">
-              {post.imageName}
+            <div 
+              className="text-xs text-gray-600 mt-1 max-w-[250px] truncate cursor-help"
+              title={post.imageName}
+            >
+              {post.imageName.length > 30 ? post.imageName.substring(0, 30) + '...' : post.imageName}
             </div>
           )}
         </div>
