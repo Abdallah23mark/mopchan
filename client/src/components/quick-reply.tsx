@@ -117,14 +117,14 @@ Use >>No. 123 to quote posts"
         <div>
           <Label className="block text-xs font-bold mb-1">Image (Optional)</Label>
           <FileInputButton
-            accept="image/*"
+            accept="image/*,video/webm"
             onChange={setImage}
             className="bg-white border border-gray-400 text-xs theme-text-main hover:bg-gray-100"
           >
             {image ? `Selected: ${image.name}` : "Choose File"}
           </FileInputButton>
           <div className="text-xs text-gray-600 mt-1">
-            Max file size: 3MB. Supported formats: JPG, PNG, GIF, WEBP
+            Max file size: 3MB. Supported formats: JPG, PNG, GIF, WEBP, WEBM
           </div>
         </div>
 

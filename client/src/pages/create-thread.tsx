@@ -105,12 +105,12 @@ export default function CreateThread() {
             <Label className="block text-xs font-bold mb-1">Image (Optional)</Label>
             <Input
               type="file"
-              accept="image/*"
+              accept="image/*,video/webm"
               onChange={(e) => setImage(e.target.files?.[0] || null)}
               className="text-xs mb-2"
             />
             <div className="text-xs text-gray-600">
-              Max file size: 3MB. Supported formats: JPG, PNG, GIF, WEBP
+              Max file size: 3MB. Supported formats: JPG, PNG, GIF, WEBP, WEBM
             </div>
           </div>
 

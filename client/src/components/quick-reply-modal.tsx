@@ -131,14 +131,14 @@ Use >>No. 123 to quote posts"
           </div>
           <div>
             <FileInputButton
-              accept="image/*"
+              accept="image/*,video/webm"
               onChange={setImage}
               className="bg-white border border-gray-400 text-xs theme-text-main hover:bg-gray-100 mb-2"
             >
               {image ? `Selected: ${image.name}` : "Choose File"}
             </FileInputButton>
             <div className="text-xs text-gray-600 mt-1">
-              Max file size: 3MB. Supported: JPG, PNG, GIF
+              Max file size: 3MB. Supported: JPG, PNG, GIF, WEBP, WEBM
             </div>
           </div>
           <div className="flex justify-between items-center">
