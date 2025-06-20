@@ -45,13 +45,17 @@ export default function Chatroom() {
 
   // Auto-scroll chat container to bottom when new messages arrive
   useEffect(() => {
-    if (chatContainerRef.current) {
+    if (chatContainerRef.current && messages.length > 0) {
       const container = chatContainerRef.current;
       const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 100;
       
-      // Always scroll to bottom for new messages or if user is near bottom
-      if (isNearBottom || messages.length <= 1) {
-        container.scrollTop = container.scrollHeight;
+      // Always scroll to bottom for initial load or if user is near bottom
+      if (isNearBottom || messages.length <= 10) { // Initial load or few messages
+        setTimeout(() => {
+          if (container) {
+            container.scrollTop = container.scrollHeight;
+          }
+        }, 50); // Small delay to ensure DOM is updated
       }
     }
   }, [messages]);
@@ -95,6 +99,12 @@ export default function Chatroom() {
                 }));
                 console.log('Loaded initial messages:', formattedMessages);
                 setMessages(formattedMessages);
+                // Ensure scroll to bottom after messages load
+                setTimeout(() => {
+                  if (chatContainerRef.current) {
+                    chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+                  }
+                }, 100);
               }
             })
             .catch(console.error);
