@@ -1,7 +1,7 @@
 import type { Thread, InsertThread, Post, InsertPost, User, InsertUser, IpBan, InsertIpBan, ThreadPin, ChatMessage, InsertChatMessage } from "@shared/schema";
 import { db } from "./db";
 import { threads, posts, users, ipBans, threadPins, sessions, chatMessages } from "@shared/schema";
-import { eq, desc, and } from "drizzle-orm";
+import { eq, desc, and, or, lte, max } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
@@ -276,16 +276,16 @@ export class DatabaseStorage implements IStorage {
 
   // Helper method to get next global post number
   private async getNextGlobalPostNumber(): Promise<number> {
-    // Get the highest post number from both tables
-    const threadQuery = db.select({ max: sql<number>`COALESCE(MAX(post_number), 0)` }).from(threads);
-    const postQuery = db.select({ max: sql<number>`COALESCE(MAX(post_number), 0)` }).from(posts);
+    // Get all existing post numbers to find the maximum
+    const allThreads = await db.select().from(threads);
+    const allPosts = await db.select().from(posts);
     
-    const [threadResult, postResult] = await Promise.all([threadQuery, postQuery]);
+    const threadNumbers = allThreads.map(t => t.postNumber || 0);
+    const postNumbers = allPosts.map(p => p.postNumber || 0);
+    const allNumbers = [...threadNumbers, ...postNumbers];
     
-    const maxThreadNumber = threadResult[0]?.max || 0;
-    const maxPostNumber = postResult[0]?.max || 0;
-    
-    return Math.max(maxThreadNumber, maxPostNumber) + 1;
+    const maxNumber = allNumbers.length > 0 ? Math.max(...allNumbers) : 0;
+    return maxNumber + 1;
   }
 
   async getChatMessages(limit: number = 50): Promise<ChatMessage[]> {
