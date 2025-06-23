@@ -1,4 +1,3 @@
-
 import { Client } from 'pg';
 import fs from 'fs/promises';
 
@@ -13,30 +12,30 @@ const escapeString = (str) => {
 
 const formatValue = (value, type) => {
   if (value === null || value === undefined) return 'NULL';
-  
+
   if (type === 'boolean') {
     return value ? '1' : '0';
   }
-  
+
   if (type === 'timestamp') {
     return escapeString(new Date(value).toISOString().slice(0, 19).replace('T', ' '));
   }
-  
+
   if (typeof value === 'number') {
     return value.toString();
   }
-  
+
   return escapeString(value);
 };
 
 (async () => {
   await client.connect();
-  
+
   let sql = `-- MySQL Export for DirectAdmin\n`;
   sql += `-- Generated on ${new Date().toISOString()}\n\n`;
-  
+
   sql += `SET FOREIGN_KEY_CHECKS = 0;\n\n`;
-  
+
   // Create tables
   sql += `-- Create threads table\n`;
   sql += `DROP TABLE IF EXISTS threads;\n`;
@@ -124,40 +123,45 @@ const formatValue = (value, type) => {
 
   // Export data from each table
   const tables = ['threads', 'posts', 'users', 'chat_messages', 'ip_bans', 'sessions', 'thread_pins'];
-  
+
   for (const tableName of tables) {
     try {
       const result = await client.query(`SELECT * FROM ${tableName}`);
-      
+
       if (result.rows.length > 0) {
         sql += `-- Insert data into ${tableName}\n`;
-        
-        for (const row of result.rows) {
-          const columns = Object.keys(row);
-          const values = columns.map(col => {
-            if (col.includes('created_at') || col.includes('bumped_at') || col.includes('expires_at')) {
-              return formatValue(row[col], 'timestamp');
-            } else if (col.includes('is_admin') || col.includes('is_admin_post')) {
-              return formatValue(row[col], 'boolean');
-            } else {
-              return formatValue(row[col]);
+
+        // Get column names from the first row, excluding non-existent columns
+        const allColumns = Object.keys(result.rows[0]);
+        const excludedColumns = ['is_pinned']; // Add any other non-existent columns here
+        const columns = allColumns.filter(col => !excludedColumns.includes(col));
+        const columnList = columns.join(', ');
+
+        const values = result.rows.map(row => {
+          const valueList = columns.map(col => {
+            const value = row[col];
+            if (col === 'is_admin_post' || col === 'is_admin') {
+              return formatValue(value, 'boolean');
+            } else if (col.includes('_at') || col === 'createdAt' || col === 'expiresAt') {
+              return formatValue(value, 'timestamp');
             }
-          });
-          
-          sql += `INSERT INTO ${tableName} (${columns.join(', ')}) VALUES (${values.join(', ')});\n`;
-        }
-        sql += '\n';
+            return formatValue(value);
+          }).join(', ');
+          return `(${valueList})`;
+        }).join(',\n');
+
+        sql += `INSERT INTO ${tableName} (${columnList}) VALUES\n${values};\n\n`;
       }
     } catch (error) {
       console.log(`Table ${tableName} doesn't exist, skipping...`);
     }
   }
-  
+
   sql += `SET FOREIGN_KEY_CHECKS = 1;\n`;
-  
+
   await fs.writeFile('mysql_export.sql', sql);
   await client.end();
-  
+
   console.log('✅ MySQL export created: mysql_export.sql');
   console.log('📝 Upload this file to your DirectAdmin MySQL database');
 })();
