@@ -80,7 +80,7 @@ export default function ThreadCard({ thread }: ThreadCardProps) {
                 onError={(e) => {
                   const img = e.target as HTMLImageElement;
                   img.src = '/attached_assets/imagenotfound3_1750389506282.png';
-                  img.onError = null; // Prevent infinite loop
+                  img.onerror = null; // Prevent infinite loop
                 }}
               />
             )}

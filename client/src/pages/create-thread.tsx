@@ -12,7 +12,7 @@ export default function CreateThread() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  
+
   const [subject, setSubject] = useState("");
   const [content, setContent] = useState("");
   const [image, setImage] = useState<File | null>(null);
@@ -24,12 +24,12 @@ export default function CreateThread() {
         method: "POST",
         body: formData,
       });
-      
+
       if (!res.ok) {
         const error = await res.json();
         throw new Error(error.message || "Failed to create thread");
       }
-      
+
       return res.json();
     },
     onSuccess: (thread) => {
@@ -38,21 +38,27 @@ export default function CreateThread() {
       setLocation(`/thread/${thread.id}`);
     },
     onError: (error) => {
-      toast({ 
-        title: "Failed to create thread", 
+      toast({
+        title: "Failed to create thread",
         description: error.message,
-        variant: "destructive" 
+        variant: "destructive"
       });
     },
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!content.trim()) {
       toast({ title: "Content is required", variant: "destructive" });
       return;
     }
+
+    if (!image) {
+      toast({ title: "Image is required", description: "Please attach an image to your thread.", variant: "destructive" });
+      return;
+    }
+
 
     const formData = new FormData();
     if (subject.trim()) formData.append("subject", subject.trim());
@@ -88,7 +94,7 @@ export default function CreateThread() {
               className="w-full p-2 text-xs border border-gray-400 font-sans"
             />
           </div>
-          
+
           <div>
             <Label className="block text-xs font-bold mb-1">Comment *</Label>
             <Textarea
@@ -100,9 +106,9 @@ export default function CreateThread() {
               className="w-full p-2 text-xs border border-gray-400 font-sans resize-none"
             />
           </div>
-          
+
           <div>
-            <Label className="block text-xs font-bold mb-1">Image (Optional)</Label>
+            <Label className="block text-xs font-bold mb-1">Image *</Label>
             <Input
               type="file"
               accept="image/*,video/webm"

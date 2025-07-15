@@ -5,125 +5,94 @@ import { useAdmin } from "@/hooks/useAdmin";
 import BanUserModal from "./ban-user-modal";
 import { useQuery } from "@tanstack/react-query";
 
-// Simple text formatting function that preserves functionality
-function formatContentForDisplay(content: any, isAdminPost?: boolean, showPreview?: (id: string, x: number, y: number) => void, hidePreview?: () => void) {
-  // Ensure we have a string
+import React from "react";
+
+function formatContentForDisplay(
+  content: any,
+  isAdminPost?: boolean,
+  showPreview?: (id: string, x: number, y: number) => void,
+  hidePreview?: () => void
+): React.ReactNode {
   const textContent = typeof content === 'string' ? content : String(content || '');
-  
   if (!textContent) return null;
-  
-  // Split into lines and process each
-  const lines = textContent.split('\n');
-  
-  return lines.map((line, index) => {
-    // Process line for quote links first, then apply greentext styling
-    const processLineWithQuotes = (text: string, lineIndex: number, isGreentext: boolean = false) => {
-      // Use a simpler approach - find quote patterns and replace them
+
+  const paragraphs = textContent.split(/\n{2,}/g);
+
+  return paragraphs.map((para, pIndex) => {
+    const lines = para.split('\n');
+
+    const lineElements = lines.map((line, lineIndex) => {
+      const isGreentext = line.startsWith('>') && !line.startsWith('>>');
+
       const quoteRegex = />>(No\. )?(\d+)/g;
       let lastIndex = 0;
-      const parts = [];
-      let match;
-      
-      while ((match = quoteRegex.exec(text)) !== null) {
-        // Add text before the quote
+      const parts: React.ReactNode[] = [];
+      let match: RegExpExecArray | null;
+
+      while ((match = quoteRegex.exec(line)) !== null) {
         if (match.index > lastIndex) {
-          const beforeText = text.slice(lastIndex, match.index);
-          if (beforeText) {
-            parts.push({
-              type: 'text',
-              content: beforeText
-            });
-          }
-        }
-        
-        // Add the quote
-        parts.push({
-          type: 'quote',
-          content: match[0],
-          postId: match[2]
-        });
-        
-        lastIndex = match.index + match[0].length;
-      }
-      
-      // Add remaining text
-      if (lastIndex < text.length) {
-        const remainingText = text.slice(lastIndex);
-        if (remainingText) {
-          parts.push({
-            type: 'text',
-            content: remainingText
-          });
-        }
-      }
-      
-      // If no quotes found, return the whole text
-      if (parts.length === 0) {
-        parts.push({
-          type: 'text',
-          content: text
-        });
-      }
-      
-      return parts.map((part, partIndex) => {
-        if (part.type === 'quote') {
-          return (
-            <span 
-              key={`${lineIndex}-${partIndex}`} 
-              className="text-blue-600 hover:text-blue-800 cursor-pointer underline"
-              onMouseEnter={(e) => {
-                if (showPreview) {
-                  showPreview(part.postId!, e.clientX, e.clientY);
-                }
-              }}
-              onMouseLeave={() => {
-                if (hidePreview) {
-                  hidePreview();
-                }
-              }}
-              onClick={() => {
-                // Use post number for lookup instead of post ID
-                const element = document.querySelector(`[data-post-number="${part.postId}"]`);
-                if (element) {
-                  element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                  element.style.transition = 'background-color 0.3s ease';
-                  element.style.backgroundColor = '#ffff08';
-                  setTimeout(() => {
-                    element.style.backgroundColor = '';
-                  }, 2000);
-                } else {
-                  console.log(`Post with number ${part.postId} not found on this page`);
-                }
-              }}
-            >
-              {part.content.includes('No.') ? part.content : `>>No. ${part.postId}`}
-            </span>
-          );
-        } else {
-          // Regular text - apply greentext styling if needed
-          return (
-            <span 
-              key={`${lineIndex}-${partIndex}`}
+          const before = line.slice(lastIndex, match.index);
+          parts.push(
+            <span
+              key={`text-${pIndex}-${lineIndex}-${lastIndex}`}
               className={isGreentext && !isAdminPost ? 'text-green-600 font-bold' : ''}
             >
-              {part.content}
+              {before}
             </span>
           );
         }
-      });
-    };
 
-    // Check if line is greentext (starts with > but not >>)
-    const isGreentext = line.startsWith('>') && !line.startsWith('>>');
-    
+        const postId = match[2];
+        parts.push(
+          <span
+            key={`quote-${pIndex}-${lineIndex}-${match.index}`}
+            className="text-blue-600 hover:text-blue-800 cursor-pointer underline"
+            onMouseEnter={(e) => showPreview?.(postId, e.clientX, e.clientY)}
+            onMouseLeave={() => hidePreview?.()}
+            onClick={() => {
+              const el = document.querySelector(`[data-post-number="${postId}"]`);
+              if (el) {
+                el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                el.classList.add("bg-yellow-100");
+                setTimeout(() => el.classList.remove("bg-yellow-100"), 2000);
+              }
+            }}
+          >
+            {match[0].includes("No.") ? match[0] : `>>No. ${postId}`}
+          </span>
+        );
+
+        lastIndex = match.index + match[0].length;
+      }
+
+      if (lastIndex < line.length) {
+        const remaining = line.slice(lastIndex);
+        parts.push(
+          <span
+            key={`tail-${pIndex}-${lineIndex}`}
+            className={isGreentext && !isAdminPost ? 'text-green-600 font-bold' : ''}
+          >
+            {remaining}
+          </span>
+        );
+      }
+
+      return (
+        <React.Fragment key={`line-${pIndex}-${lineIndex}`}>
+          {parts}
+          <br />
+        </React.Fragment>
+      );
+    });
+
     return (
-      <span key={index}>
-        {processLineWithQuotes(line, index, isGreentext)}
-        {index < lines.length - 1 && <br />}
-      </span>
+      <p key={`para-${pIndex}`} className="mb-2 last:mb-0">
+        {lineElements}
+      </p>
     );
   });
 }
+
 
 interface PostProps {
   post: Post;
@@ -144,7 +113,7 @@ export default function PostComponent({ post, isOP = false, subject, onQuote, on
   const formatDate = (date: Date) => {
     return new Date(date).toLocaleDateString("en-US", {
       month: "2-digit",
-      day: "2-digit", 
+      day: "2-digit",
       year: "2-digit",
       weekday: "short",
       hour: "2-digit",
@@ -166,12 +135,12 @@ export default function PostComponent({ post, isOP = false, subject, onQuote, on
       const contentElement = postElement.querySelector('.post-content');
       const nameElement = postElement.querySelector('.post-name');
       const dateElement = postElement.querySelector('.post-date');
-      
+
       // Get the raw content from the post data
       const postData = (postElement as any).__postData;
       const rawContent = postData?.content || contentElement?.textContent || 'Post content not found';
       const isAdminPost = postData?.isAdminPost || false;
-      
+
       setHoverPreview({
         postId: postNumber,
         x: Math.min(x, window.innerWidth - 400),
@@ -181,7 +150,7 @@ export default function PostComponent({ post, isOP = false, subject, onQuote, on
         name: nameElement?.textContent || 'Anonymous',
         date: dateElement?.textContent || ''
       });
-      
+
       // Highlight referenced post
       postElement.classList.add('bg-red-100', 'border-red-300');
     }
@@ -198,7 +167,7 @@ export default function PostComponent({ post, isOP = false, subject, onQuote, on
 
 
   return (
-    <div 
+    <div
       id={`post-${post.id}`}
       className={`flex flex-col md:flex-row gap-4 p-2 ${isOP ? 'theme-bg-post' : 'theme-bg-reply'} transition-all duration-200`}
       data-post-id={post.id}
@@ -218,10 +187,10 @@ export default function PostComponent({ post, isOP = false, subject, onQuote, on
               muted
               loop
               preload="metadata"
-              style={{ 
-                maxWidth: '250px', 
+              style={{
+                maxWidth: '250px',
                 maxHeight: '250px',
-                width: 'auto', 
+                width: 'auto',
                 height: 'auto',
                 backgroundColor: '#000',
                 border: '1px solid #ccc'
@@ -249,7 +218,7 @@ export default function PostComponent({ post, isOP = false, subject, onQuote, on
             />
           )}
           {post.imageName && (
-            <div 
+            <div
               className="text-xs text-gray-600 mt-1 w-[250px] cursor-help truncate"
               title={post.imageName}
             >
@@ -304,13 +273,13 @@ export default function PostComponent({ post, isOP = false, subject, onQuote, on
             {subject}
           </div>
         )}
-        <div 
+        <div
           className={`text-xs leading-relaxed whitespace-pre-wrap post-content ${(post as any).isAdminPost ? 'text-red-600 font-bold' : ''}`}
         >
           {formatContentForDisplay(post.content, (post as any).isAdminPost, showPostPreview, hidePostPreview)}
         </div>
       </div>
-      
+
       {hoverPreview && (
         <div
           className="fixed bg-white border-2 border-red-500 p-3 shadow-lg z-50 max-w-md pointer-events-none"
@@ -322,20 +291,20 @@ export default function PostComponent({ post, isOP = false, subject, onQuote, on
             <span className="ml-2 text-blue-600">No. {hoverPreview.postId}</span>
           </div>
           <div className={`text-xs leading-relaxed ${hoverPreview.isAdminPost ? 'text-red-600 font-bold' : ''}`}>
-            {typeof hoverPreview.content === 'string' 
+            {typeof hoverPreview.content === 'string'
               ? formatContentForDisplay(
-                  hoverPreview.content.length > 200 
-                    ? hoverPreview.content.substring(0, 200) + '...' 
-                    : hoverPreview.content,
-                  hoverPreview.isAdminPost
-                )
+                hoverPreview.content.length > 200
+                  ? hoverPreview.content.substring(0, 200) + '...'
+                  : hoverPreview.content,
+                hoverPreview.isAdminPost
+              )
               : hoverPreview.content}
           </div>
         </div>
       )}
-      
+
       {expandedImage && (
-        <div 
+        <div
           className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 cursor-pointer"
           onClick={() => {
             setExpandedImage(null);
@@ -360,13 +329,13 @@ export default function PostComponent({ post, isOP = false, subject, onQuote, on
               onError={(e) => {
                 const img = e.target as HTMLImageElement;
                 img.src = '/attached_assets/imagenotfound3_1750389506282.png';
-                img.onError = null; // Prevent infinite loop
+                img.onerror = null; // Prevent infinite loop
               }}
             />
           )}
         </div>
       )}
-      
+
       {showBanModal && adminToken && (
         <BanUserModal
           isOpen={showBanModal}

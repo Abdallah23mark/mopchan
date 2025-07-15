@@ -23,7 +23,7 @@ function App() {
   const [showAdminPanel, setShowAdminPanel] = useState(false);
   const [adminUser, setAdminUser] = useState<User | null>(null);
   const [adminToken, setAdminToken] = useState<string | null>(null);
-  
+
   const isInCatalog = location === "/";
 
   // Check for existing admin session on load
@@ -35,19 +35,19 @@ function App() {
           Authorization: `Bearer ${token}`
         }
       })
-      .then(response => {
-        if (response.ok) {
-          return response.json();
-        }
-        throw new Error("Invalid token");
-      })
-      .then(data => {
-        setAdminUser(data.user);
-        setAdminToken(token);
-      })
-      .catch(() => {
-        localStorage.removeItem("adminToken");
-      });
+        .then(response => {
+          if (response.ok) {
+            return response.json();
+          }
+          throw new Error("Invalid token");
+        })
+        .then(data => {
+          setAdminUser(data.user);
+          setAdminToken(token);
+        })
+        .catch(() => {
+          localStorage.removeItem("adminToken");
+        });
     }
   }, []);
 
@@ -96,7 +96,7 @@ function App() {
               </div>
             )}
           </div>
-          
+
           <StyleChooser />
           {/* Header */}
           <div className="theme-bg-header border-b-2 theme-border p-2 text-center">
@@ -124,7 +124,7 @@ function App() {
                   className="bg-white border px-2 py-1 text-xs"
                   style={{ minWidth: '120px' }}
                 />
-                <select 
+                <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value as "bump" | "reply" | "time")}
                   className="bg-white border px-2 py-1 text-xs"
@@ -134,13 +134,13 @@ function App() {
                   <option value="time">Time Posted</option>
                 </select>
               </div>
-              
+
               {isInCatalog && (
                 <div className="font-bold absolute left-1/2 transform -translate-x-1/2">catalog</div>
               )}
-              
+
               <div className="flex gap-2 items-center">
-                <button 
+                <button
                   onClick={() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })}
                   className="bg-gray-300 hover:bg-gray-400 px-2 py-1 cursor-pointer"
                 >
@@ -159,8 +159,30 @@ function App() {
             </Switch>
           </div>
           <ThreadWatcher />
+          {/* Bottom-Left Footer Link */}
+          <div
+            style={{
+              position: 'fixed',
+              bottom: '0',
+              left: '0',
+              padding: '0.5rem 1rem',
+              fontSize: '0.8rem',
+              color: '#666',
+              zIndex: 20,
+            }}
+          >
+            <a
+              href="https://mopgang.com"
+              style={{
+                textDecoration: 'none',
+                color: '#666',
+              }}
+            >
+              Mopgang
+            </a>
+          </div>
         </div>
-        
+
         {/* Admin Modals */}
         {showAdminLogin && (
           <AdminLogin
@@ -168,7 +190,7 @@ function App() {
             onClose={() => setShowAdminLogin(false)}
           />
         )}
-        
+
         {showAdminPanel && adminUser && adminToken && (
           <AdminPanel
             user={adminUser}
@@ -176,7 +198,7 @@ function App() {
             onClose={() => setShowAdminPanel(false)}
           />
         )}
-        
+
         <Toaster />
       </TooltipProvider>
     </QueryClientProvider>
