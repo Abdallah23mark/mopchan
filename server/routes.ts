@@ -27,13 +27,31 @@ const upload = multer({
 export async function registerRoutes(app: Express): Promise<Server> {
   // Get all threads for catalog
   app.get("/api/threads", async (req, res) => {
-    try {
-      const threads = await storage.getAllThreads();
-      res.json(threads);
-    } catch (error) {
-      res.status(500).json({ message: "Failed to fetch threads" });
-    }
-  });
+  try {
+    // 1) fetch threads sorted by bumpedAt descending
+    const threads = await storage.getAllThreads();
+
+    // 2) annotate each with pinned flag
+    const threadsWithPin = await Promise.all(
+      threads.map(async (t) => ({
+        ...t,
+        pinned: await storage.isPinned(t.id),
+      }))
+    );
+
+    // 3) sort pinned first, then by bumpedAt
+    threadsWithPin.sort((a, b) => {
+      if (a.pinned && !b.pinned) return -1;
+      if (!a.pinned && b.pinned) return 1;
+      return b.bumpedAt.getTime() - a.bumpedAt.getTime();
+    });
+
+    res.json(threadsWithPin);
+  } catch (error) {
+    res.status(500).json({ message: "Failed to fetch threads" });
+  }
+});
+
 
   // Get specific thread with posts
   app.get("/api/threads/:id", async (req, res) => {
@@ -84,7 +102,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ message: "Invalid thread data", errors: error.errors });
       }
-      res.status(500).json({ message: "Failed to create thread", error: error.message });
+      res.status(500).json({ message: "Failed to create thread", error: typeof error === "object" && error !== null && "message" in error ? (error as any).message : String(error) });
     }
   });
 
@@ -133,7 +151,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ message: "Invalid post data", errors: error.errors });
       }
-      res.status(500).json({ message: "Failed to create post", error: error.message });
+      res.status(500).json({ message: "Failed to create post", error: typeof error === "object" && error !== null && "message" in error ? (error as any).message : String(error) });
     }
   });
 

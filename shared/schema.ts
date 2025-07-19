@@ -59,6 +59,11 @@ export const threadPins = pgTable("thread_pins", {
   pinnedBy: integer("pinned_by").references(() => users.id).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
+export const insertThreadPinSchema = createInsertSchema(threadPins).omit({
+  id: true,
+  createdAt: true,
+});
+export type InsertThreadPin = z.infer<typeof insertThreadPinSchema>;
 
 // Sessions table for admin login
 export const sessions = pgTable("sessions", {

@@ -38,9 +38,10 @@ export const users = mysqlTable("users", {
   id: int("id").primaryKey().autoincrement(),
   username: varchar("username", { length: 50 }).unique().notNull(),
   password: text("password").notNull(),
-  isAdmin: boolean("is_admin").default(false).notNull(),
+  role: varchar("role", { length: 20 }).default("user").notNull(), // "user" | "moderator" | "admin"
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
+
 
 export const ipBans = mysqlTable("ip_bans", {
   id: int("id").primaryKey().autoincrement(),
@@ -92,6 +93,7 @@ export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
   createdAt: true,
 });
+
 
 export const insertIpBanSchema = createInsertSchema(ipBans).omit({
   id: true,

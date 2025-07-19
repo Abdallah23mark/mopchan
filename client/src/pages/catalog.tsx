@@ -1,6 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import type { Thread } from "@shared/schema";
 import ThreadCard from "@/components/thread-card";
+import { useState } from "react";
+import axios from "axios";
+import { useAdmin } from "../components/useAdmin";
+
 
 interface CatalogProps {
   searchTerm?: string;

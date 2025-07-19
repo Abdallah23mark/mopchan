@@ -65,10 +65,13 @@ export default function AdminPanel({ user, token, onClose }: AdminPanelProps) {
 
   const unbanMutation = useMutation({
     mutationFn: async (ipAddress: string) => {
-      await apiRequest(`/api/admin/ban/${encodeURIComponent(ipAddress)}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await fetch(
+        `/api/admin/ban/${encodeURIComponent(ipAddress)}`,
+        {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/bans"] });
@@ -112,7 +115,6 @@ export default function AdminPanel({ user, token, onClose }: AdminPanelProps) {
         <div className="mb-6">
           <p className="text-sm text-gray-600">
             Logged in as: <span className="font-medium">{user.username}</span>
-            {user.redText && <span className="text-red-600 ml-2">[Red Text Enabled]</span>}
           </p>
         </div>
 

@@ -123,7 +123,7 @@ export default function PostComponent({ post, isOP = false, subject, onQuote, on
     });
   };
 
-  const expandImage = (imageUrl: string, imageName?: string) => {
+  const expandImage = (imageUrl: string, imageName?: string | null) => {
     setExpandedImage(imageUrl);
     setExpandedImageName(imageName || null);
   };
