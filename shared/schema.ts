@@ -1,125 +1,62 @@
-import { pgTable, text, serial, integer, timestamp, boolean, varchar } from "drizzle-orm/pg-core";
-import { createInsertSchema } from "drizzle-zod";
-import { z } from "zod";
+// shared/schema.ts
 
-export const threads = pgTable("threads", {
-  id: serial("id").primaryKey(),
-  postNumber: integer("post_number").notNull(),
-  subject: text("subject"),
-  content: text("content").notNull(),
-  imageUrl: text("image_url"),
-  imageName: text("image_name"),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  bumpedAt: timestamp("bumped_at").defaultNow().notNull(),
-  replyCount: integer("reply_count").default(0).notNull(),
-  imageCount: integer("image_count").default(0).notNull(),
-  name: text("name").default("Anonymous"),
-  tripcode: text("tripcode"),
-  isAdminPost: boolean("is_admin_post").default(false).notNull(),
-  ipAddress: text("ip_address"),
+import {
+  pgTable,
+  serial,
+  varchar,
+  text,
+  integer,
+  boolean,
+  timestamp,
+  index,
+} from 'drizzle-orm/pg-core';
+
+// BOARD
+export const boards = pgTable('boards', {
+  id: serial('id').primaryKey(),
+  slug: varchar('slug', { length: 16 }).notNull().unique(), // e.g., "a"
+  title: varchar('title', { length: 64 }).notNull(),        // e.g., "Anime"
+  isLocked: boolean('is_locked').default(false),
 });
 
-export const posts = pgTable("posts", {
-  id: serial("id").primaryKey(),
-  threadId: integer("thread_id").notNull(),
-  postNumber: integer("post_number").notNull(),
-  content: text("content").notNull(),
-  imageUrl: text("image_url"),
-  imageName: text("image_name"),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  name: text("name").default("Anonymous"),
-  tripcode: text("tripcode"),
-  isAdminPost: boolean("is_admin_post").default(false).notNull(),
-  ipAddress: text("ip_address"),
-});
+// THREAD
+export const threads = pgTable('threads', {
+  id: serial('id').primaryKey(),
+  boardId: integer('board_id').references(() => boards.id).notNull(),
+  title: varchar('title', { length: 128 }),
+  content: text('content').notNull(),
+  createdAt: timestamp('created_at').defaultNow(),
+  pinned: boolean('pinned').default(false),
+  locked: boolean('locked').default(false),
+  deleted: boolean('deleted').default(false),
+  authorIp: varchar('author_ip', { length: 64 }),
+}, (table) => ({
+  boardIndex: index().on(table.boardId),
+}));
 
-// Admin users table
-export const users = pgTable("users", {
-  id: serial("id").primaryKey(),
-  username: varchar("username", { length: 50 }).unique().notNull(),
-  password: text("password").notNull(),
-  isAdmin: boolean("is_admin").default(false).notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-});
+// POST (Reply)
+export const posts = pgTable('posts', {
+  id: serial('id').primaryKey(),
+  threadId: integer('thread_id').references(() => threads.id).notNull(),
+  content: text('content').notNull(),
+  createdAt: timestamp('created_at').defaultNow(),
+  deleted: boolean('deleted').default(false),
+  authorIp: varchar('author_ip', { length: 64 }),
+}, (table) => ({
+  threadIndex: index().on(table.threadId),
+}));
 
-// IP bans table
+// IP BANS
 export const ipBans = pgTable("ip_bans", {
-  id: serial("id").primaryKey(),
-  ipAddress: varchar("ip_address", { length: 45 }).unique().notNull(),
-  reason: text("reason"),
-  bannedBy: integer("banned_by").references(() => users.id),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  expiresAt: timestamp("expires_at"),
+  ip: varchar("ip", { length: 255 }).primaryKey(),
+  reason: varchar("reason", { length: 255 }).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
 });
 
-// Thread pins table
-export const threadPins = pgTable("thread_pins", {
-  id: serial("id").primaryKey(),
-  threadId: integer("thread_id").references(() => threads.id).notNull(),
-  pinnedBy: integer("pinned_by").references(() => users.id).notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
+// ADMIN / MODERATOR ACCOUNTS
+export const admins = pgTable('admins', {
+  id: serial('id').primaryKey(),
+  username: varchar('username', { length: 64 }).notNull().unique(),
+  passwordHash: varchar('password_hash', { length: 255 }).notNull(),
+  isModerator: boolean('is_moderator').default(false),
 });
-export const insertThreadPinSchema = createInsertSchema(threadPins).omit({
-  id: true,
-  createdAt: true,
-});
-export type InsertThreadPin = z.infer<typeof insertThreadPinSchema>;
-
-// Sessions table for admin login
-export const sessions = pgTable("sessions", {
-  id: varchar("id", { length: 255 }).primaryKey(),
-  userId: integer("user_id").references(() => users.id).notNull(),
-  expiresAt: timestamp("expires_at").notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-});
-
-export const chatMessages = pgTable("chat_messages", {
-  id: serial("id").primaryKey(),
-  username: varchar("username").notNull(),
-  message: text("message").notNull(),
-  tripcode: varchar("tripcode"),
-  createdAt: timestamp("created_at").defaultNow(),
-});
-
-export const insertThreadSchema = createInsertSchema(threads).omit({
-  id: true,
-  createdAt: true,
-  bumpedAt: true,
-  replyCount: true,
-  imageCount: true,
-  postNumber: true,
-});
-
-export const insertPostSchema = createInsertSchema(posts).omit({
-  id: true,
-  createdAt: true,
-  postNumber: true,
-});
-
-export const insertUserSchema = createInsertSchema(users).omit({
-  id: true,
-  createdAt: true,
-});
-
-export const insertIpBanSchema = createInsertSchema(ipBans).omit({
-  id: true,
-  createdAt: true,
-});
-
-export const insertChatMessageSchema = createInsertSchema(chatMessages).omit({
-  id: true,
-  createdAt: true,
-});
-
-export type InsertThread = z.infer<typeof insertThreadSchema>;
-export type Thread = typeof threads.$inferSelect;
-export type InsertPost = z.infer<typeof insertPostSchema>;
-export type Post = typeof posts.$inferSelect;
-export type User = typeof users.$inferSelect;
-export type InsertUser = z.infer<typeof insertUserSchema>;
-export type IpBan = typeof ipBans.$inferSelect;
-export type InsertIpBan = z.infer<typeof insertIpBanSchema>;
-export type ThreadPin = typeof threadPins.$inferSelect;
-export type Session = typeof sessions.$inferSelect;
-export type ChatMessage = typeof chatMessages.$inferSelect;
-export type InsertChatMessage = z.infer<typeof insertChatMessageSchema>;

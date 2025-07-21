@@ -1,27 +1,15 @@
-// Simple tripcode generation function
-export const generateTripcode = (password: string): string => {
-  if (!password) return "";
-  
-  // Simple hash function (not cryptographically secure, just for demo)
-  let hash = 0;
-  for (let i = 0; i < password.length; i++) {
-    const char = password.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
-    hash = hash & hash; // Convert to 32-bit integer
-  }
-  
-  return Math.abs(hash).toString(36).slice(0, 8).toUpperCase();
-};
+// client/src/utils/tripcode.ts
 
-// Parse name field for name and tripcode
-export const parseNameField = (nameField: string): { name: string; tripcode: string | null } => {
-  if (!nameField.includes('#')) {
-    return { name: nameField || "Anonymous", tripcode: null };
-  }
-  
-  const [name, password] = nameField.split('#', 2);
-  return {
-    name: name || "Anonymous",
-    tripcode: password ? generateTripcode(password) : null
-  };
-};
+/**
+ * A simple “tripcode” generator: hashes the secret and returns
+ * the last 10 characters of a base-64–encoded SHA-1 digest.
+ */
+export async function generateTripcode(secret: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(secret);
+  const hashBuffer = await crypto.subtle.digest("SHA-1", data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  const base64 = btoa(String.fromCharCode(...hashArray));
+  // Take last 10 chars (ignoring padding)
+  return base64.replace(/=+$/, "").slice(-10);
+}

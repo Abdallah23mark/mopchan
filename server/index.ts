@@ -1,73 +1,85 @@
-import express, { type Request, Response, NextFunction } from "express";
-import { registerRoutes } from "./routes";
-import { setupVite, serveStatic, log } from "./vite";
+import 'dotenv/config';
+import path from 'path';
+import express from 'express';
+import helmet from 'helmet';
+import morgan from 'morgan';
+import { createServer as createHttpServer } from 'http';
+import { WebSocketServer } from 'ws';
+import { serveStaticAssets } from './vite';      // dev/prod static handling
+import routes from './routes';                   // { public: Router, admin: Router }
+import {
+  checkIpBan,
+  postRateLimiter,
+  authenticateAdmin,
+} from './middleware';
+import { handleWsConnection } from './chat';
 
+const PORT = parseInt(process.env.PORT || '5000', 10);
 const app = express();
+
+// —————————————————————————————————————————————
+// Security & Logging
+// —————————————————————————————————————————————
+app.disable('x-powered-by');
+app.use(helmet());
+app.use(morgan('tiny'));
+
+// —————————————————————————————————————————————
+// Middleware: Ban checks + JSON parsing
+// —————————————————————————————————————————————
+app.use(checkIpBan);
 app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
 
-// Serve uploaded files statically
-app.use('/uploads', express.static('uploads'));
+// —————————————————————————————————————————————
+// Rate limits for anonymous posting
+// —————————————————————————————————————————————
+app.use('/api/threads', postRateLimiter);           // new threads
+app.use('/api/threads/:id/posts', postRateLimiter); // replies
 
-app.use((req, res, next) => {
-  const start = Date.now();
-  const path = req.path;
-  let capturedJsonResponse: Record<string, any> | undefined = undefined;
+// —————————————————————————————————————————————
+// Public API routes
+// —————————————————————————————————————————————
+app.use('/api', routes.public);
 
-  const originalResJson = res.json;
-  res.json = function (bodyJson, ...args) {
-    capturedJsonResponse = bodyJson;
-    return originalResJson.apply(res, [bodyJson, ...args]);
-  };
+// —————————————————————————————————————————————
+// Admin API routes (JWT guard applied)
+// —————————————————————————————————————————————
+app.use('/api/admin', authenticateAdmin, routes.admin);
 
-  res.on("finish", () => {
-    const duration = Date.now() - start;
-    if (path.startsWith("/api")) {
-      let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
-      if (capturedJsonResponse) {
-        logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
-      }
+// —————————————————————————————————————————————
+// Static file uploads and frontend assets
+// —————————————————————————————————————————————
+// Serve user-uploaded images
+app.use('/uploads', express.static(path.resolve(__dirname, '../uploads')));
 
-      if (logLine.length > 80) {
-        logLine = logLine.slice(0, 79) + "…";
-      }
+// Serve the Vite-built React app (or proxy in dev)
+serveStaticAssets(app);
 
-      log(logLine);
-    }
-  });
+// —————————————————————————————————————————————
+// WebSocket Chat (on same server)
+// —————————————————————————————————————————————
+const httpServer = createHttpServer(app);
+const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
+wss.on('connection', handleWsConnection);
 
-  next();
+// —————————————————————————————————————————————
+// Fallback for client-side routing
+// —————————————————————————————————————————————
+app.use((req, res) => {
+  res.sendFile(path.resolve(__dirname, '../dist/index.html'));
 });
 
-(async () => {
-  const server = await registerRoutes(app);
+// —————————————————————————————————————————————
+// Global Error Handler
+// —————————————————————————————————————————————
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  console.error(err);
+  res.status(err.status || 500).json({ error: err.message || 'Internal Server Error' });
+});
 
-  app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
-    const status = err.status || err.statusCode || 500;
-    const message = err.message || "Internal Server Error";
-
-    res.status(status).json({ message });
-    throw err;
-  });
-
-  // importantly only setup vite in development and after
-  // setting up all the other routes so the catch-all route
-  // doesn't interfere with the other routes
-  if (app.get("env") === "development") {
-    await setupVite(app, server);
-  } else {
-    serveStatic(app);
-  }
-
-  // ALWAYS serve the app on port 5000
-  // this serves both the API and the client.
-  // It is the only port that is not firewalled.
-  const port = 5000;
-  server.listen({
-    port,
-    host: "0.0.0.0",
-    reusePort: true,
-  }, () => {
-    log(`serving on port ${port}`);
-  });
-})();
+// —————————————————————————————————————————————
+// Start Server
+// —————————————————————————————————————————————
+httpServer.listen(PORT, () => {
+  console.log(`🚀 Server running on http://localhost:${PORT}`);
+});

@@ -1,0 +1,18 @@
+/* client/index.css */
+
+/* Tailwind’s base styles */
+@tailwind base;
+
+/* Tailwind’s component classes */
+@tailwind components;
+
+/* Your custom utilities or overrides */
+@tailwind utilities;
+
+/* Example custom override */
+body {
+  background-color: theme('colors.neutral.900');
+  color: theme('colors.white');
+}
+
+/* If you add any global classes, put them here */
